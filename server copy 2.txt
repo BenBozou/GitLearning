@@ -13,9 +13,6 @@ var express = require('express'),
     app = express();
 
 
-
-
-
 var mapIdSession = {};
 
 let addValueToList = (key, value) => {
