@@ -16,6 +16,8 @@ global class AccountActiveFlagUpdateOneShotBatch implements DataBase.Batchable<s
     public String targetValue; 
     public String limitQuery; 
     
+
+    
     
    global Database.QueryLocator start(Database.BatchableContext BC) {
     String localQuery = 'Select Id, vlocity_cmt__Active__c From Account where RecordTypeId in (' + recordTypeIdList + ') and vlocity_cmt__Active__c  =\'' + sourceValueInQueryCriteria  + '\' and  vlocity_cmt__Status__c=\'' + sourceStatus+ '\'' ;
