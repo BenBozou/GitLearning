@@ -1,0 +1,101 @@
+<apex:page standardController="OpportunityLineItem" extensions="OpportunityProductEditController"
+           showHeader="true" sidebar="true" standardStylesheets="true" tabStyle="Account">
+<apex:includeScript value="/support/console/38.0/integration.js"/>   
+<script>    
+	sforce.console.setTabTitle('{!oppItemName}');
+</script>            
+    <apex:pageMessages escape="false"></apex:pageMessages>
+    <apex:form >
+        <apex:sectionHeader subtitle="{!oppItemName}" title="Opportunity Product Edit">    
+        <apex:pageBlock >
+                <apex:pageBlockButtons >
+                    <apex:commandButton id="Save" value="{!$Label.btnSave}" action="{!Save}" />
+                    <apex:commandButton id="Cancel" value="{!$Label.Cancel}" action="{!Cancel}" />
+                </apex:pageBlockButtons>                 
+            <apex:pageBlockSection title="{!$Label.General_1}" >
+                    <apex:repeat value="{!General_1}" var="f" id="repgen1">
+                        <apex:inputField value="{!oppLineItem[f.fieldPath]}" id="infmaing1I" required="{!OR(f.required, f.dbrequired)}" rendered="{!inputMode}"/>                        
+                    </apex:repeat>
+                </apex:pageBlockSection>            
+
+             <apex:pageBlockSection title="{!$Label.Hosting_1}" rendered="{!enableHosting}">
+                    <apex:repeat value="{!Hosting_1}" var="f" id="rephost1">
+                        <apex:inputField value="{!oppLineItem[f.fieldPath]}"
+                            id="infmain" required="{!OR(f.required, f.dbrequired)}" />
+                    </apex:repeat>
+                </apex:pageBlockSection>
+            <apex:pageBlockSection title="{!$Label.Hosting_2}" rendered="{!enableHosting}">
+                    <apex:repeat value="{!Hosting_2}" var="f" id="rephost2">
+                        <apex:inputField value="{!oppLineItem[f.fieldPath]}"
+                            id="infmain" required="{!OR(f.required, f.dbrequired)}" />
+                    </apex:repeat>
+                </apex:pageBlockSection>
+            <apex:pageBlockSection title="{!$Label.Hosting_3}" rendered="{!enableHosting}">
+                    <apex:repeat value="{!Hosting_3}" var="f" id="rephost3">
+                        <apex:inputField value="{!oppLineItem[f.fieldPath]}"
+                            id="infmain" required="{!OR(f.required, f.dbrequired)}" />
+                    </apex:repeat>
+                </apex:pageBlockSection>
+            
+            <apex:pageBlockSection title="{!$Label.Telephony_1}" rendered="{!enableTelephony}">
+                    <apex:repeat value="{!Telephony_1}" var="f" id="reptel1">
+                        <apex:inputField value="{!oppLineItem[f.fieldPath]}"
+                            id="infmain" required="{!OR(f.required, f.dbrequired)}" />
+                    </apex:repeat>
+                </apex:pageBlockSection>
+             <apex:pageBlockSection title="{!$Label.Telephony_2}" rendered="{!enableTelephony}">
+                    <apex:repeat value="{!Telephony_2}" var="f" id="reptel2">
+                        <apex:inputField value="{!oppLineItem[f.fieldPath]}"
+                            id="infmain" required="{!OR(f.required, f.dbrequired)}" />
+                    </apex:repeat>
+                </apex:pageBlockSection>
+             <apex:pageBlockSection title="{!$Label.Telephony_3}" rendered="{!enableTelephony}">
+                    <apex:repeat value="{!Telephony_3}" var="f" id="reptel3">
+                        <apex:inputField value="{!oppLineItem[f.fieldPath]}"
+                            id="infmain" required="{!OR(f.required, f.dbrequired)}" />
+                    </apex:repeat>
+                </apex:pageBlockSection>
+            <apex:pageBlockSection title="{!$Label.Transmition}" rendered="{!enableTransmition}">
+                    <apex:repeat value="{!Transmition}" var="f" id="reptransm">
+                        <apex:inputField value="{!oppLineItem[f.fieldPath]}"
+                            id="infmain" required="{!OR(f.required, f.dbrequired)}" />
+                    </apex:repeat>
+                </apex:pageBlockSection>
+            <apex:pageBlockSection title="{!$Label.Cellular_1}" rendered="{!enableCellular}">
+                    <apex:repeat value="{!Cellular_1}" var="f" id="repcel1">
+                        <apex:inputField value="{!oppLineItem[f.fieldPath]}" id="infmainc1I" required="{!OR(f.required, f.dbrequired)}" />                        
+                    </apex:repeat>
+             </apex:pageBlockSection>            
+             <apex:pageBlockSection title="{!$Label.OneTime_Cellular1}" rendered="{!enableOneTimeCellular}">
+                    <apex:repeat value="{!OneTime_Cellular1}" var="f" id="reponecel1">                        
+                        <apex:inputField value="{!oppLineItem[f.fieldPath]}" id="infmaingoc11" required="{!OR(f.required, f.dbrequired)}"/>
+                    </apex:repeat>
+             </apex:pageBlockSection>
+            <apex:pageBlockSection title="{!$Label.OneTime_Cellular2}" rendered="{!enableOneTimeCellular}">
+                    <apex:repeat value="{!OneTime_Cellular2}" var="f" id="reponecel2">                        
+                        <apex:inputField value="{!oppLineItem[f.fieldPath]}" id="infmaingoc12" required="{!OR(f.required, f.dbrequired)}"/>
+                    </apex:repeat>
+                </apex:pageBlockSection>
+            <apex:pageBlockSection title="{!$Label.OneTime_Cellular3}" rendered="{!enableOneTimeCellular}">
+                    <apex:repeat value="{!OneTime_Cellular3}" var="f" id="reponecel3">                        
+                        <apex:inputField value="{!oppLineItem[f.fieldPath]}" id="infmaingoc13" required="{!OR(f.required, f.dbrequired)}"/>
+                    </apex:repeat>
+            </apex:pageBlockSection>
+                            
+            <apex:pageBlockSection title="{!$Label.General_2}">
+                    <apex:repeat value="{!General_2}" var="f" id="repgen2">
+                        <apex:inputField value="{!oppLineItem[f.fieldPath]}" id="infmaing2I" required="{!OR(f.required, f.dbrequired)}"  rendered="{!inputMode}"/>                        
+                    </apex:repeat>
+                </apex:pageBlockSection>
+            <apex:pageBlockSection title="{!$Label.General_3}">
+                    <apex:repeat value="{!General_3}" var="f" id="repgen3">
+                        <apex:inputField value="{!oppLineItem[f.fieldPath]}" id="infmaing3I" required="{!OR(f.required, f.dbrequired)}" />                        
+                    </apex:repeat>
+                </apex:pageBlockSection>
+            
+
+        </apex:pageBlock>
+        </apex:sectionHeader>
+    </apex:form>
+    
+</apex:page>

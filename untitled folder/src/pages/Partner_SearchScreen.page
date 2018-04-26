@@ -1,0 +1,509 @@
+<apex:page controller="SearchScreenController" tabStyle="Search__tab" standardStylesheets="false" id="searchPage">
+    <apex:includeScript value="/support/console/38.0/integration.js"/>
+    <apex:includescript value="https://code.jquery.com/jquery-1.12.3.js" / >
+    <apex:stylesheet value="{!URLFOR($Resource.vlocity_cmt__vlocity_assets, '/bower_components/ng-table/dist/ng-table.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.vlocity_cmt__slds, '/assets/styles/salesforce-lightning-design-system-vf.min.css')}"/>
+
+    <script>
+        $(function() {
+            // Categories and Subcategories
+            var mapCategoriesJSON = JSON.parse('{!JSENCODE(mapCategoriesJSON)}');
+            
+            $( document ).ready(function() {
+                $("#category").change();
+                $("#selectSubCategory").val("SubscriberNumber");
+                updateSubCategory();
+            });    
+                    
+            $("#clearSearch").click(function() {
+                $('.errorContainer').empty();
+                $("#searchTables").empty();
+                $(".searchValue").val("");
+            });
+            
+            $("#category").change(function() {
+                $(".searchValue").val("");
+                var subCategory = mapCategoriesJSON[$(this).val()];
+
+                $('#selectSubCategory').empty();
+                
+                if(subCategory != null){
+                    if(subCategory.length > 1){
+                         $('#selectSubCategory').append(
+                            $('<option />')
+                                .val("")
+                                .html("קטגוריה משנית לחיפוש")
+                        );
+                    }
+                    for (var i=0 ; i<subCategory.length ; i++){
+                        $('#selectSubCategory').append(
+                            $('<option />')
+                                .val(subCategory[i].Parameter__c)
+                                .html(subCategory[i].Label)
+                        );
+                    }
+                }
+                updateSubCategory();
+            });
+
+            $("#selectSubCategory").change(updateSubCategory);
+
+            function updateSubCategory() {
+                $(".searchValue").val("");
+                $('.subCategory').val($('#selectSubCategory').val());
+            }
+
+            // Search field
+            $(document.getElementById('searchPage:searchForm')).find('select, input[type=text]').keypress(function(event){
+                if(event.keyCode == 13 && checkValue())
+                    $('.searchButton').click();
+            });
+        });
+          var $errorTpl = $("<div class='slds-notify_container'>" +
+              "<div class='slds-notify slds-notify--alert slds-theme--error slds-theme--alert-texture' role='alert'>"+
+                "<span class='slds-assistive-text'>Error</span>"+
+                "<h2><span class='msg'></span></h2>"+
+              "</div>"+
+            "</div>");
+            
+            function displayError(msg) {
+                $('.errorContainer')
+                    .empty()
+                    .append(
+                        $errorTpl.clone()
+                    ).find('.msg').html(msg);
+            }
+
+            function checkValue() {
+               var searchValue = $.trim($(".searchValue").val());
+               var subCategory = $('#selectSubCategory').val();
+               $('.errorContainer').empty();
+               if(searchValue.length < 9 && subCategory == 'Id'){
+               	    searchValue = ("000000000" + searchValue).slice(-9); 
+               	    $(".searchValue").val(searchValue);
+               } 
+               if(subCategory.length == 0){
+                   displayError('אנא בחר קטגוריה משנית');
+               }
+               else if(searchValue.length == 0){
+                   displayError('אנא מלא ערך לחיפוש');
+               }
+               else if(searchValue.length != 10 && subCategory=='SubscriberNumber'){
+                   displayError('אנא מלא 10 תווים');
+               }    
+               else if(searchValue.substring(0, 2) != "05" && subCategory=='SubscriberNumber'){
+                   displayError('אנא הזן מספר מנוי תקין');
+               }               
+               else if(searchValue.length < 3 && (subCategory=='AccountName' || subCategory=='ContactName')){
+                   displayError('אנא מלא לפחות 2 תווים לחיפוש');
+               } else {
+                   return true;
+               }
+               $("#searchTables").empty();
+               return false;
+            }
+      
+      function openTab(accName, accId, conId, leadId, leadName, productId , layout, subscriber, lineCode, itemName){
+          var url;
+          var tabName;
+          
+          if(leadId == ''){
+              url = '/' + accId + '?contactId=' + conId;
+              if(productId != '' && layout != '' && subscriber != ''){
+                  url += '&productId=' + productId + '&layout=' + layout + '&subscriber=' + subscriber;
+              }
+              if(lineCode != '' && layout != '' && itemName != ''){
+                  url += '&productId=' + productId + '&layout=' + layout + '&ItemName=' + itemName + '&LineCode=' + lineCode;
+              }
+              tabName = accName;
+          }
+          else{
+              url = '/' + leadId;
+              tabName = leadName;
+          }
+          console.log('url' + url);
+          if(sforce.console && sforce.console.isInConsole()){
+              sforce.console.openPrimaryTab(null, url, true, tabName, null, tabName);
+              sforce.console.focusPrimaryTabByName(tabName, null);
+          }
+          else{
+              window.open (url,tabName);
+          }
+      }
+      function checkSearchResults(){            
+            var $linkContainer = $('.link-container');
+            var errorMessage = $('.errorMessage').val();
+            switch ($linkContainer.length) {
+                case 1:
+                    // open 360 tab
+                    $linkContainer.children().filter('a').click();
+                    break;
+                case 0:
+                    $('.errorContainer').empty();
+                    if(errorMessage.length != 0){
+                         displayError(errorMessage);    
+                    }
+                    else{
+                        displayError('לא נמצאו תוצאות חיפוש');    
+                    }
+                    break;
+            }
+      }
+  </script>
+    <style>
+        /* RTL */
+        .via-slds td, .via-slds th {
+            text-align: right;
+        }
+        /* toggle */
+        *[data-toggle-btn] {
+            cursor: pointer;
+        }
+        /* separator */
+        .via-slds .separator {
+            height: 0px;
+            border-top: 2px solid #BFBFBF;
+            margin: 50px 0;
+        }
+        /* search form */
+        .via-slds .styleBut.slds-button--brand {
+            line-height: 50px;
+            font-size: 20px;
+            padding: 0 25px;
+            background: #6E2C6B;
+            border-color: #6E2C6B;
+        }
+        .via-slds input.slds-input[type=text] {
+            line-height: 50px;
+            font-size: 20px;
+            border: #6E2C6B 1px solid;
+            min-height :calc(3.2rem + (1px * 2));
+        }
+        .via-slds .slds-select {
+            border-color: #6E2C6B;
+        }
+        .via-slds .slds-select:active, .via-slds .slds-select:focus {
+            box-shadow: 0 0 3px #6E2C6B;
+            border-color: #6E2C6B;
+        }
+
+        /* results */
+        .via-slds .results-block {
+            border: 2px solid #BFBFBF;
+        }
+        .via-slds .results-table.slds-table.slds-table--bordered {
+            border-top: 0;
+            border-bottom: 0;
+        }
+        /* results block header */
+        .results-block-header {
+            background: #CE1175;
+            color: #fff;
+        }
+        .results-block-header.account {
+            background: #6E2C6B;
+        }
+        .results-block-header.contact {
+            background: #D10074;
+        }
+        .results-block-header.lead {
+            background: #BFBFBF;
+            color: #000;
+        }
+        .via-slds .results-title {
+            color: #6E2C6B;
+            font-size: 18px;
+        }
+        .via-slds .bus-priv-label {
+            color: #FDC82F;
+            font-weight: bold;
+            font-size: 14px;
+            text-align: left;
+        }
+        .results-item-name {
+            font-size: 18px;
+        }
+        .results-item-value {
+            font-size: 14px;
+            display: list-item;
+        }
+        *[data-toggle-btn] .arrow svg {
+            width: 16px;
+            height: 16px;
+        }
+        *[data-toggle-btn] .arrow .arrow-up { display: block; }
+        *[data-toggle-btn] .arrow .arrow-down { display: none; }
+        *[data-toggle-btn].collapsed .arrow .arrow-up { display: none; }
+        *[data-toggle-btn].collapsed .arrow .arrow-down { display: block; }
+
+        /* results table header */
+        .via-slds .table-header-row {
+            background: #636466;
+            color: #fff;
+        }
+        .via-slds .table-header-row th{
+            padding: 5px;
+            font-size: 12px;
+        }
+        /* results table */
+        .via-slds td.link-container {}
+        .via-slds td.link-container a.slds-button.slds-button--brand {
+            padding: 0 12px;
+            font-size: 12px;
+            line-height: 22px;
+            border: 0;
+            border-radius: 0;
+            background: #6E2C6B;
+        }
+        .slds-notify_container {
+            position: relative !important;
+        }
+    </style>
+
+    <div class="via-slds">
+    <div class="slds-container--medium slds-container--center slds-m-top--large">
+        <apex:form id="searchForm" >
+            
+            <div class="slds-grid slds-form--inline slds-m-horizontal--large">
+                <div class="slds-form-element slds-size--1-of-4 slds-m-right--none">
+                    <select id="category" class="slds-select">
+                        <apex:repeat value="{!categoriesMap}" var="key">       
+                            <option value="{!key}">{!key}</option>
+                        </apex:repeat>
+                    </select>
+                </div>
+                <div class="slds-form-element slds-size--1-of-4">
+                    <select id="selectSubCategory" class="slds-select">
+                        <option value="">-בחר קטגוריה ראשית-</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="slds-grid slds-form--inline slds-m-around--large">                
+                <div class="slds-form-element slds-col slds-m-right--none">
+                    <apex:inputText value="{!searchValue}" styleClass="searchValue slds-input" />
+                </div>
+                <div class="slds-form-element slds-shrink"> 
+                    <apex:commandButton action="{!search}" onclick="if (!checkValue()) {return false;}" reRender="searchResults" styleClass="styleBut searchButton slds-button slds-button--brand" value="חיפוש" onComplete="checkSearchResults()" />
+                    <input id="clearSearch" type="button" class="styleBut slds-button slds-button--brand" value="נקה"/>
+                </div>
+            </div>   
+            <div class="errorContainer slds-m-around--large"></div>
+            <apex:outputPanel id="searchResults" styleClass="searchResults">
+                
+                <script>
+                    $(function() {
+                        // Toggles
+                        var $arrowDown = $('<svg xmlns="http://www.w3.org/2000/svg" width="52" height="52" viewBox="0 0 52 52"><path fill="#fff" d="m47.6 17.8l-20.5 20.7c-0.6 0.6-1.6 0.6-2.2 0l-20.5-20.7c-0.6-0.6-0.6-1.6 0-2.2l2.2-2.2c0.6-0.6 1.6-0.6 2.2 0l16.1 16.3c0.6 0.6 1.6 0.6 2.2 0l16.1-16.2c0.6-0.6 1.6-0.6 2.2 0l2.2 2.2c0.5 0.6 0.5 1.5 0 2.1z"></path></svg>');
+                        var $arrowUp = $('<svg xmlns="http://www.w3.org/2000/svg" width="52" height="52" viewBox="0 0 52 52"><path fill="#fff" d="m4.4 34.2l20.5-20.7c0.6-0.6 1.6-0.6 2.2 0l20.5 20.7c0.6 0.6 0.6 1.6 0 2.2l-2.2 2.2c-0.6 0.6-1.6 0.6-2.2 0l-16.1-16.4c-0.6-0.6-1.6-0.6-2.2 0l-16.1 16.3c-0.6 0.6-1.6 0.6-2.2 0l-2.2-2.2c-0.5-0.6-0.5-1.5 0-2.1z"></path></svg>');
+
+                        $('[data-toggle-btn]').each(function() {
+                            var $arrowContainer = $(this).find('.arrow');
+                            $(this).on('click', function() {
+                                var obj = $('[data-toggle="'+$(this).data('toggle-btn')+'"]').toggle();
+                                updateArrow($arrowContainer, obj.is(':visible'));
+                            });
+
+                            updateArrow($arrowContainer, $('[data-toggle="'+$(this).data('toggle-btn')+'"]').is(':visible'));
+                        });
+
+                        function updateArrow(container, visible) {
+                            if (!visible) {
+                                container.empty().append($arrowDown.clone());
+                            } else {
+                                container.empty().append($arrowUp.clone());
+                            }
+                        }
+                    });
+                    
+                </script>
+
+                <apex:pageMessages />
+                <apex:inputtext value="{!subCategory}" styleClass="slds-hide subCategory"/>
+                <apex:inputtext value="{!errorMessage}" styleClass="slds-hide errorMessage"/>
+              
+              <div id="searchTables">
+              <apex:outputText rendered="{!accountMapSize != 0 || contactMapSize != 0 || leadList.size != 0}"><div class="results-title slds-text-heading--small slds-m-vertical--large slds-p-horizontal--x-small"> תוצאות חיפוש {!IF((accountMapSize != 0), ' - לקוחות', IF((contactMapSize != 0), ' - אנשי קשר', IF((leadList.size != 0), ' - לידים', '')))}</div></apex:outputText>
+              <apex:repeat value="{!contactMap}" var="key">
+                 <div class="slds-m-around--large" rendered="{!contactMapSize != 0}">
+                     <div class="results-block">
+                        <div class="results-block-header contact slds-grid slds-p-around--x-small" data-toggle-btn="contact-{!contactMap[key].id}">
+                            <div class="slds-col">
+                                <div class="results-item-name"><strong>{!contactMap[key].name}</strong></div>
+                                <div class="results-item-value">{!contactMap[key].SSN}</div>
+                            </div>
+                            <div class="slds-col">
+                                <div class="bus-priv-label"></div>
+                                <div class="arrow slds-text-align--left"></div>
+                            </div>
+                         </div>        
+                    <div class="{!if(contactMapSize == 1 ,'','slds-hide')}" data-toggle="contact-{!contactMap[key].id}">
+                        <table class="results-table slds-table slds-table--bordered slds-table--cell-buffer">
+                            <thead>
+                                <tr class="table-header-row">
+                                    <th scope="col">שם לקוח</th>
+                                    <th scope="col">מספר מזהה</th>
+                                    <th scope="col">סוג לקוח</th>
+                                    <th scope="col">סוג איש קשר</th>
+                                    <th scope="col"></th>
+                                    <th scope="col"></th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                  <apex:repeat value="{!contactMap[key].relatedAccountList}" var="acc">
+                                    <tr>
+                                        <td scope="row">{!acc.name}</td>
+                                        <td scope="row">{!acc.privateCompany}</td>
+                                        <td scope="row">{!acc.recordType}</td>
+                                        <td scope="row">{!acc.roleFunction}</td>
+                                        <td scope="row">{!acc.split}</td>
+                                        <td scope="row" class="link-container" onclick="openTab('{!acc.Name}', '{!acc.Id}', '{!contactMap[key].id}', '', '','','','','','');">
+                                            <a class="slds-button slds-button--brand">פתח 360</a>
+                                        </td>
+                                    </tr>
+                                  </apex:repeat>
+                                </tbody>
+                            </table>
+                      </div>
+                </div>
+            </div>
+            </apex:repeat>
+            
+            <apex:outputPanel rendered="{!accountMapSize != 0}">
+                <apex:outputPanel rendered="{!subCategory == 'SubscriberNumber'}">      
+                  <div class="results-title slds-text-heading--small slds-m-vertical--large slds-p-horizontal--x-small">לקוח נוכחי</div>
+                      <apex:repeat value="{!accountMap}" var="key">
+                         <apex:outputPanel rendered="{!accountMap[key].isCurrentAccount}">      
+                         <div class="slds-m-around--large">
+                            <div class="results-block">
+                                <div class="results-block-header account slds-grid slds-p-around--x-small" data-toggle-btn="account-{!accountMap[key].id}"> 
+                                    <div class="slds-col">
+                                        <div class="results-item-name"><strong>{!accountMap[key].name}</strong></div>
+                                        <div class="results-item-value">{!accountMap[key].privateCompany}</div>
+                                    </div>
+                                    <div class="slds-col">
+                                        <div class="bus-priv-label">{!accountMap[key].split}</div>
+                                        <div class="arrow slds-text-align--left"></div>
+                                    </div>
+                                </div> 
+                                <div class="{!if(accountMapSize == 1 ,'','slds-hide')}" data-toggle="account-{!accountMap[key].id}">
+                                    <table class="results-table slds-table slds-table--bordered slds-table--cell-buffer">
+                                        <thead>
+                                            <tr class="table-header-row">
+                                                <th scope="col">שם איש קשר</th>
+                                                <th scope="col">ת.ז</th>
+                                                <th scope="col">סוג איש קשר</th>
+                                                <th scope="col"></th>
+                                              </tr>
+                                          </thead>
+                                          <tbody>
+                                              <apex:repeat value="{!accountMap[key].relatedContactList}" var="con">
+                                                <tr>
+                                                    <td scope="row">{!con.name}</td>
+                                                    <td scope="row">{!con.SSN}</td>
+                                                    <td scope="row">{!con.roleFunction}</td>
+                                                    <td scope="row" class="link-container" onclick="openTab('{!accountMap[key].name}', '{!accountMap[key].id}', '{!con.id}', '','', '{!con.productId}', '{!con.layout}', '{!con.subscriber}', '{!con.lineCode}', '{!con.itemName}');">
+                                                        <a class="slds-button slds-button--brand">פתח 360</a>
+                                                    </td>
+                                                </tr>
+                                            </apex:repeat>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        </apex:outputPanel>      
+                     </apex:repeat>
+                  <apex:outputPanel rendered="{!accountMapSize > 1}"> 
+                  <div class="separator"></div>
+                  <div class="results-title slds-text-heading--small slds-m-vertical--large slds-p-horizontal--x-small">היסטורית לקוחות</div>
+                  </apex:outputPanel>                
+                </apex:outputPanel>      
+                  <apex:repeat value="{!accountMap}" var="key">
+                     <apex:outputPanel rendered="{!accountMap[key].isCurrentAccount == false && subCategory == 'SubscriberNumber' || subCategory != 'SubscriberNumber'}">      
+                     <div class="slds-m-around--large">
+                        <div class="results-block">
+                            <div class="results-block-header account slds-grid slds-p-around--x-small" data-toggle-btn="account-{!accountMap[key].id}"> 
+                                <div class="slds-col">
+                                    <div class="results-item-name"><strong>{!accountMap[key].name}</strong></div>
+                                    <div class="results-item-value">{!accountMap[key].privateCompany}</div>
+                                </div>
+                                <div class="slds-col">
+                                    <div class="bus-priv-label">{!accountMap[key].split}</div>
+                                    <div class="arrow slds-text-align--left"></div>
+                                </div>
+                            </div> 
+                            <div class="{!if(accountMapSize == 1 ,'','slds-hide')}" data-toggle="account-{!accountMap[key].id}">
+                                <table class="results-table slds-table slds-table--bordered slds-table--cell-buffer">
+                                    <thead>
+                                        <tr class="table-header-row">
+                                            <th scope="col">שם איש קשר</th>
+                                            <th scope="col">ת.ז</th>
+                                            <th scope="col">סוג איש קשר</th>
+                                            <th scope="col"></th>
+                                          </tr>
+                                      </thead>
+                                      <tbody>
+                                          <apex:repeat value="{!accountMap[key].relatedContactList}" var="con">
+                                            <tr>
+                                                <td scope="row">{!con.name}</td>
+                                                <td scope="row">{!con.SSN}</td>
+                                                <td scope="row">{!con.roleFunction}</td>
+                                                <td scope="row" class="link-container" onclick="openTab('{!accountMap[key].name}', '{!accountMap[key].id}', '{!con.id}', '','', '{!con.productId}', '{!con.layout}', '{!con.subscriber}', '{!con.lineCode}', '{!con.itemName}');">
+                                                    <a class="slds-button slds-button--brand">פתח 360</a>
+                                                </td>
+                                            </tr>
+                                        </apex:repeat>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    </apex:outputPanel>      
+                 </apex:repeat>
+                 </apex:outputPanel>
+             
+             <apex:repeat value="{!leadList}" var="lead" rendered="{!leadList.size != 0}">                   
+                <div class="slds-m-around--large">      
+                    <div class="results-block">
+                        <div class="results-block-header lead slds-grid slds-p-around--x-small" data-toggle-btn="lead-{!lead.id}">
+                            <div class="slds-col">
+                                <div class="results-item-name"><strong>{!lead.Name}</strong></div>
+                                <div class="results-item-value"> </div>
+                            </div>
+                            <div class="slds-col">
+                                <div class="bus-priv-label">{!cellcomExternalIdsMap[lead.CellcomExternalID__c]}</div>
+                                <div class="arrow slds-text-align--left">{!cellcomExternalIdsMap[lead.CellcomExternalID__c]}</div>
+                            </div>
+                        </div>
+                          <div class="{!if(leadList.size == 1 ,'','slds-hide')}" data-toggle="lead-{!lead.id}">
+                            <table class="results-table slds-table slds-table--bordered slds-table--cell-buffer">
+                                <thead>
+                                    <tr class="table-header-row">
+                                        <th scope="col">ליד</th>
+                                        <th scope="col">טלפון</th>
+                                        <th scope="col">ת.ז</th>
+                                        <th scope="col"></th>
+                                      </tr>
+                                  </thead>
+                                  <tbody>                            
+                                    <tr>
+                                        <td scope="row">{!lead.Name}</td>
+                                        <td scope="row">{!lead.Phone}</td>
+                                        <td scope="row">{!cellcomExternalIdsMap[lead.CellcomExternalID__c]}</td>
+                                        <td scope="row" class="link-container" onclick="openTab('','', '', '{!lead.id}','{!lead.Name}','','','','', '','');">
+                                            <a class="slds-button slds-button--brand">פתח פרטי ליד</a>
+                                        </td>
+                                      </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </apex:repeat>
+                </div>
+                </apex:outputPanel>
+            </apex:form>
+        </div>
+    </div>
+</apex:page>

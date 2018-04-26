@@ -1,0 +1,54 @@
+<apex:page controller="UpdateUserCSRController">
+
+<apex:form id="formId">
+    
+   <apex:pageblock id="pb">
+   
+        <apex:actionFunction name="getData" action="{!findUser}" reRender="formId" /> 
+            
+        <apex:pageBlockSection columns="1" title="{!$Label.UpdateCSRSubTitle1}" collapsible="false">
+        
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="{!$ObjectType.User.fields.Name.Label}"/>
+                <c:AutoCompleteV2 syncManualEntry="false" allowClear="true" importJquery="true" labelField="Name,FederationIdentifier" SObject="User" valueField="Id" targetField="{!userIdByName}" style="width:300px"/>
+            </apex:pageBlockSectionItem>
+            
+         </apex:pageBlockSection>
+         
+        <apex:inputText value="{!userIdByName}" disabled="true" style="width:200px!important" rendered="false"/>
+    </apex:pageblock>
+    
+    
+    
+    <apex:pageBlock rendered="{!not IsBlank(selectedUser)}">
+        <apex:pageBlockButtons location="bottom">
+            <apex:commandButton value="{!$Label.Save}" action="{!updateUser}" style="width:100px"/>
+        </apex:pageBlockButtons>
+        
+        <apex:pageBlockSection columns="1" title="{!$Label.UpdateCSRSubTitle2}" collapsible="false">
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="{!$ObjectType.User.fields.Name.Label}" />
+                <apex:outputField value="{!selectedUser.Name}"/>
+            </apex:pageBlockSectionItem>
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="{!$Label.UpdateCSRFederationLabel}" />
+                <apex:outputField value="{!selectedUser.FederationIdentifier}"/>
+            </apex:pageBlockSectionItem>
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="{!$ObjectType.User.fields.Spoken_Languages__c.Label}"/>
+                <apex:inputField value="{!selectedUser.Spoken_Languages__c}"/>
+            </apex:pageBlockSectionItem>
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="{!$ObjectType.User.fields.Location__c.Label}" />
+                <apex:inputField value="{!selectedUser.Location__c}"/>
+            </apex:pageBlockSectionItem>
+            <apex:pageBlockSectionItem >
+                <apex:outputLabel value="{!$ObjectType.User.fields.Area__c.Label}" />
+                <apex:inputField value="{!selectedUser.Area__c}"/>
+            </apex:pageBlockSectionItem>
+        </apex:pageBlockSection>
+    </apex:pageBlock>
+    <apex:pagemessages />
+</apex:form>
+
+</apex:page>

@@ -1,0 +1,114 @@
+<apex:page docType="html-5.0" language="iw" controller="AssigmentTabletoUsersControler" tabstyle="Contact" standardStylesheets="true" sidebar="{!IF($Site.Prefix != null,'true','false')}" showHeader="{!IF($Site.Prefix != null,'true','false')}" title="{!$Label.titleVF}">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script>
+        var globalQuantity = "{!quantity}";
+    </script>
+    <style>
+        .ssOverlayBack {
+            background: url("{!URLFOR($Resource.SLDS221, '/assets/images/spinners/slds_spinner_brand.gif')}") center center no-repeat;
+        }
+    </style>
+    <apex:stylesheet value="{!URLFOR($Resource.VF_implementation, 'css/AssignmentTable.css')}" /> 
+    <div id='ssOverlay' class='ssOverlay ssOverlayBack'></div>
+    <apex:form styleClass="theForm" id="frm">
+        <apex:pageBlock id="pageblock">
+            <apex:pageMessages id="msg" />
+            <div class="top">
+                <apex:outputText value="{!$Label.name}" styleClass="userName" />
+                <apex:outputText value="{!CurrentUser.Name}" styleClass="userName" />
+                <apex:outputText value="{!$Label.role}" styleClass="roleName" />
+                <apex:outputText value="{!CurrentUser.UserRole.Name}" styleClass="roleName" />
+                <apex:outputText value="{!$Label.amount}" styleClass="quantity" rendered="{!isSingUser}" />
+                <apex:outputText value="" id="totalQuantity" styleClass="quantity" rendered="{!isSingUser}" />
+            </div>
+            <apex:commandButton value="{!$Label.btnDivide}" styleClass="divButton" onclick="div();return false;" onkeyup="checkSum()" rendered="{!isSingUser}" />
+            <apex:commandButton value="{!$Label.btnReset}" styleClass="resetButton" onclick="resetFunc();return false;" rendered="{!isSingUser}" />
+            <apex:pageBlockButtons location="bottom" rendered="{!isUserB2B}" style="text-align: right;">
+                    <apex:commandButton value="{!$Label.btnSave}" action="{!save}" rerender="msg,tbl" styleClass="saveButton" onclick="jQuery('.ssOverlay').show()" oncomplete="jQuery('.ssOverlay').hide()" />
+                </apex:pageBlockButtons>
+            <div class="roleList">
+                <apex:repeat value="{!roleIdList}" var="Key">
+                    <apex:outputPanel layout="none" rendered="{!Key != ''}">
+                        <a href="/apex/AssigmentTableToUsers?roleId={!Key}&roles={!linkRoleIds}">
+                        <apex:outputText value="{!pageHeader[Key].Name}"/></a> ->
+                    </apex:outputPanel>
+                </apex:repeat>
+                {!roleName}
+            </div>
+                <table border='0' class='mainTable'>
+                <tr>
+                <td class='firstTd'>
+                <apex:dataTable value="{!WrapperList}" var="Rec" rowClasses="odd,even" styleClass="tableClass" id="tbl" border="0">
+                    {!Rec.existing} 
+                    <apex:column rendered="{!isUserRole}" headerValue="{!$Label.roles}" styleClass="userRoleAndUser" headerClass="userRoleHeader">
+                        <!--<apex:facet name="header">{!$Label.roles}</apex:facet> -->{!Rec.user}
+                        <a href="/apex/AssigmentTableToUsers?roleId={!Rec.userRole.Id}&roles={!linkRoleIds}" class="userRoleAndUserName">
+                            <!--<apex:outputText value="{!Rec.user.RoleName__c}" />-->
+                            <apex:outputText value="{!Rec.userRole.Name}" />
+                        </a>
+                    </apex:column>
+                    <apex:column rendered="{!isUser}" styleClass="userRoleAndUser" headerValue="{!$Label.users}" headerClass="userRoleHeader">
+                        <apex:outputText value="{!Rec.user.Name}" styleClass="userRoleAndUserName" /> 
+                    </apex:column>
+                    <apex:column rendered="{!isSingUser}" styleClass="quantityCol" headerValue="{!$Label.quantity}" headerClass="quantityHeader">
+                        <apex:inputText onkeyup="checkSum()" value="{!Rec.quantity}" size="6" id="quantityRec" styleClass="quantityRec" />
+                    </apex:column>
+                    <apex:column styleClass="hotLead" headerClass="hotLead">
+                        <apex:facet name="header"> 
+                            {!$Label.hotLeadTitle} <br/>
+                            <input id="checkBox1" class="checker" type="checkbox" />
+                        </apex:facet>
+                        <script>
+                            $('#checkBox1').prop('disabled', ('{!Rec.hotLeadVisible}' == 'true'));
+                        </script>
+                        <apex:inputCheckbox value="{!Rec.hotLead}" disabled="{!Rec.hotLeadVisible}" styleClass="chcheckBox1" title="{!$Label.hotLeadTitle}"/>
+                    </apex:column>
+                    <apex:column styleClass="potnLead" headerValue="" headerClass="potnLead">
+                        <apex:facet name="header">
+                            {!$Label.leadTitle} <br/>
+                            <input id="checkBox2" class="checker" type="checkbox" />
+                        </apex:facet>
+                        <script>
+                            $('#checkBox2').prop('disabled', ('{!Rec.leadVisible}' == 'true'));
+                        </script>
+                        <apex:inputCheckbox value="{!Rec.lead}" disabled="{!Rec.leadVisible}" styleClass="chcheckBox2" title="{!$Label.leadTitle}"/>
+                    </apex:column>
+                    <apex:column styleClass="existLead" headerValue="" headerClass="existLead">
+                        <apex:facet name="header">
+                            {!$Label.existingTitle} <br/>
+                            <input id="checkBox3" class="checker" type="checkbox" />
+                        </apex:facet>
+                        <script>
+                            $('#checkBox3').prop('disabled', ('{!Rec.existingVisible}' == 'true'));
+                        </script>
+                        <apex:inputCheckbox value="{!Rec.existing}" disabled="{!Rec.existingVisible}" styleClass="chcheckBox3" title="{!$Label.existingTitle}"/>
+                    </apex:column>
+                    <apex:column styleClass="used" headerValue="{!$Label.used}" headerClass="used">
+                        <apex:outputText value="{!Rec.used}" />
+                    </apex:column>
+                    <apex:column rendered="{!isUser}" styleClass="used" headerValue="{!$Label.usedHourly}" headerClass="used">
+                        <apex:outputText value="{!Rec.followupPerHour}" />
+                    </apex:column>
+                     </apex:dataTable>
+                     </td>
+                     <td class='secondTd'>
+                    <div class= "table-wrapper-small">
+                    <apex:dataTable value="{!WrapperList}" var="Rec" rowClasses="odd,even" styleClass="tableClass" id="tbl1" border="0">
+                    <apex:repeat value="{!titleMap}" var="Key">
+                        <apex:column styleClass="products" headerValue="" headerClass="productHeader">
+                            <apex:facet name="header">
+                                {!Key} <br/>
+                                <input id="{!titleMap[Key]}" class="checker" type="checkbox"/>  
+                            </apex:facet>
+                            <apex:inputCheckbox value="{!Rec.productMap[Key]}" styleClass="productCheckBox ch{!titleMap[Key]}" title="{!Key}"/>
+                        </apex:column>
+                    </apex:repeat>
+                </apex:dataTable>
+                </div>
+                 </td>
+                 </tr>
+                </table>
+        </apex:pageBlock>
+    </apex:form>
+    <script src="{!URLFOR($Resource.VF_implementation, 'js/AssignmentTable.js')}"></script>
+</apex:page>

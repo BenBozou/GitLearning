@@ -1,0 +1,292 @@
+<apex:page controller="WrapUpSupport" standardStylesheets="false" showHeader="false" sidebar="false" docType="html-5.0" cache="true" action="{!WrapUpPre}">
+    <!--standardController="vlocity_cmt__CustomerInteraction__c"-->
+    
+    <!-- Added slds for styling -->
+    <apex:stylesheet value="{!URLFOR($Resource.vlocity_cmt__slds, '/assets/styles/salesforce-lightning-design-system-vf.rtl.min.css')}" />
+    <!-- Added Console API toolkit to allow Console actions -->
+
+     <apex:includeScript value="/support/console/39.0/integration.js"/>
+
+       <apex:includeScript value="{!URLFOR($Resource.jquery, 'jquery.min.js')}"/>
+    
+    <style>
+        .via-slds .slds-checkbox [type="checkbox"][disabled]+.slds-checkbox--faux:after { 
+            border-color: #1589ee;
+        }
+      /*  .displayInline{
+             display: -webkit-flex;
+             display:-ms-inline;
+        }*/
+    </style>
+    
+    
+    
+     <!-- TOAST Notifications for Timeout Interval msg or any other msgs -->
+    <div class="vlocity via-slds" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" ng-app="InteractionSummaryOS">
+       
+   
+    <!-- ERROR ALERT DIV -->
+    <apex:outputPanel layout="block" id="msg_block" >
+        <div id="err_wrapper"
+             class="slds-notify slds-notify--alert slds-theme--{!IF(customerInteraction.vlocity_cmt__Status__c=='In Progress','error','info')} slds-theme--alert-texture"
+             role="alert">
+            <h2>
+
+                <span id="err_text">
+                <center>  
+               <!--   <apex:pageMessages id="showmsgApex"></apex:pageMessages>   -->
+                <span id="showmsg"> 
+                    <apex:outputPanel layout="inline" id="msg_console" rendered="{!IF(customerInteraction.vlocity_cmt__Status__c=='In Progress',true,false)}" >
+                     {!$Label.InteractionInProgress} 
+                    </apex:outputPanel>
+             
+               </span> <br/>
+
+                <span id="countdown_text"> </span> 
+                </center>
+                </span>
+        
+            </h2>
+        </div>
+    </apex:outputPanel>
+        
+        <!-- Added Support in ContextId from CustomerInteraction-->
+        <vlocity_cmt:BusinessProcessComponent strOmniScriptType="Interaction" 
+                strOmniScriptSubType="CallWrapUp" 
+                strOmniScriptLang="Hebrew" 
+                previewMode="{!$CurrentPage.parameters.previewEmbedded}" 
+                verticalMode="{!$CurrentPage.parameters.verticalMode}" 
+                strOmniScriptId="{!$CurrentPage.parameters.designerPreviewId}" 
+                scriptLayout="lightning" 
+                mobile="true" 
+                ContextId="{!customerInteraction.Id}" />
+
+
+<!-- Template for Activities Selectable Items --> 
+<!--<script type="text/ng-template" id="WUActivityTimeLine.html">     
+
+<div style="width:100%; max-height:500px" class="slds-scrollable--y">
+<ul class="slds-m-around--small">
+  <li ng-repeat="(key,record) in control.vlcSI[control.itemsKey] | orderBy:-record.LastModifiedDate" ng-class="{ 'vlc-selectableitem-selected' : p.vlcSelected }" >
+    
+    <span class="slds-assistive-text">{{key}}</span>
+    <div class="slds-media displayInline ">
+      <div class="slds-media__body">
+        <div class="slds-media slds-media--timeline">
+          <div class="slds-media__figure slds-timeline__icon">
+            <div class="slds-icon_container">
+               <slds-button-svg-icon size="'large'" sprite="'utility'" icon="'sort'"></slds-button-svg-icon>
+            </div>
+          </div>
+          <div class="slds-media__body">
+            <div class="slds-media displayInline">
+              <div class="slds-media__figure slds-checkbox"> 
+                   <label class="slds-checkbox__label" for="checkbox-{{$index}}">
+                  <input type="checkbox" name="options" id="checkbox-{{$index}}" ng-model='record.vlcSelected' ng-change='onSelectItem(control, record, $index, this)' checked="checked"/>
+                 
+                  <span class="slds-checkbox--faux"></span>
+                  <span class="slds-form-element__label slds-assistive-text">Select</span>
+                </label>
+              </div>
+              <div class="slds-media__body">
+                <h3 class="slds-truncate" title="{{record.Name}}">
+                    <a href="javascript:void(0);"> {{record.Name}} </a>
+                </h3>
+                <ul class="slds-list--horizontal slds-wrap">
+                  <li class="slds-m-right--large">
+                    <span class="slds-text-title"> {!$Label.Field_Name}: </span>
+                    <span class="slds-text-body--small">
+                        <a href="javascript:void(0);">{{record.Data.ElementLabel}}</a>
+                    </span>
+                  </li>
+
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="slds-media__figure slds-media__figure--reverse">
+        <div class="slds-timeline__actions">
+          <p class="slds-timeline__date">{!$Label.Last_Modified}: {{record.LastModifiedDate | date :  "dd/MM/yyyy"}}</p>
+          <p class="slds-timeline__date">{!$Label.Changed_By}: {{record.ownerName}}</p>
+
+        </div>
+      </div>
+    </div>
+  </li>
+</ul>
+</div>                
+</script>-->
+
+<!--  Custom Control Buttons  -->
+            
+<div class="interaction-panel">
+
+     <apex:form rendered="{!IF(customerInteraction.vlocity_cmt__Status__c=='Completed',true,false)}">
+       <apex:pageblock >
+      
+            <div class="slds-align--absolute-center slds-grid slds-grid--align-end slds-p-top--small slds-buttons-group">    
+                <div class="slds-col slds-m-right--small slds-m-left--small">
+                  <apex:commandButton styleClass="slds-button slds-button--neutral" value="{!$Label.vlocity_cmt__cancel}" onclick="countdown_clear()" style="width:90px" rerender="err_text"/>            
+                </div>
+                <!--Removed to not support Controller Extension => action="{!checkStatus}" -->
+                <div class="slds-col slds-m-right--small slds-m-left--small">
+                     <apex:commandButton styleClass="slds-button slds-button--brand" value="{!$Label.vlocity_cmt__close}" onclick="countdown_init()" style="width:90px" rerender="err_text"/>
+                </div>
+            </div>
+
+        </apex:pageblock>
+     </apex:form>
+
+          
+        
+       
+    <!-- Console Interaction Actions -->
+
+      <script type="text/javascript">  
+      
+            var countdown;
+            var countdown_number;
+
+            // activate timeout
+            function countdown_init() {
+                countdown_number = 4;
+                countdown_trigger();
+               
+            }
+
+            // set timeout msg with countdown
+            function countdown_trigger() {
+                if(countdown_number > 0) {
+                    countdown_number--;
+                    document.getElementById('countdown_text').innerHTML = '{!$Label.ConsoleMSG} ' + countdown_number +' {!$Label.Seconds}';
+                    if(countdown_number > 0) {
+                        countdown = setTimeout('countdown_trigger()', 1000);
+                    }
+                    else {
+                         closePrimaryTab();
+                    }
+                }
+            }
+
+            // Cancel timeout
+            function countdown_clear() {
+                clearTimeout(countdown);
+            }
+            
+            
+            var CloseCurrentTab = function CloseCurrentTab() {   
+               
+               if (sforce.console.isInConsole()) {
+
+                   try {
+                        sforce.console.disableTabClose(false, false);
+                        sforce.console.getEnclosingTabId(closeSubtab);
+                    }catch(err){
+                        alert(err);
+                    }
+               }
+                else {
+                    var parentWindow = window.parent;
+                    parentWindow.location = '{!$Site.BaseUrl}/{!customerInteraction.vlocity_cmt__AccountId__c}';
+                }
+            }
+
+ 
+            //Console actions for יציאה
+            var closePrimaryTab = function closePrimaryTab() {   
+               
+                  if (sforce.console.isInConsole()) {
+                     
+                       try{
+                            sforce.console.disableTabClose(false, false);
+                            sforce.console.getEnclosingPrimaryTabId(closeSubtab);
+                        }catch(err){
+                            alert(err);
+                        }
+                   }
+                else {
+                    var parentWindow = window.parent;
+                    parentWindow.location = '{!$Site.BaseUrl}/home/home.jsp';
+                }
+            }
+            
+            baseCtrl.prototype.saveDisableLock = function()
+            {
+                window.disableTabLock();
+               
+               
+            }
+            
+           var disableTabLock = function disableTabLock() {   
+
+                    try{
+                        sforce.console.disableTabClose(false, false);
+                        location.reload();
+                     
+                    }catch(err){
+                        alert(err);
+                    }
+              
+            }
+
+            var closeSubtab = function closeSubtab(result) {
+         
+                var tabId = result.id;
+                sforce.console.closeTab(tabId, callback);
+                
+            };
+
+            var callback = function() {
+                if (result.error) {
+                    alert("Error message is " + result.error);
+                }
+            };
+
+      </script>
+    </div> 
+        
+    <script type="text/javascript">
+        var modules = ['vlocity-business-process'];
+        var myModule = angular.module('InteractionSummaryOS', modules);
+    </script>
+        
+
+        
+        <style>
+
+        /* RTL Support */
+        .vlc-slds-bpTree-step-chart__container {
+
+             margin-bottom: 0px !important;
+
+        }
+        .via-slds input.slds-input[type="text"]{
+            unicode-bidi: embed 
+        }
+
+        .via-slds .slds-textarea{
+          unicode-bidi: embed;
+        }
+
+
+        .datepickers-container{
+             z-index: 9900;
+             position:absolute !important;
+        }
+
+        /* Removing Steps panel from Omniscript */
+        @media(min-width: 62.5em) {
+            .via-slds .vlc-slds-right--panel {
+                display: none;
+            }
+        }
+        
+        .via-slds .vlc-slds-container--grippy {
+            display: none;
+        }
+        </style>
+    </div>
+    <vlocity_cmt:VFActionFunction />
+</apex:page>

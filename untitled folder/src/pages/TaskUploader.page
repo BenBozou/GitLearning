@@ -1,0 +1,139 @@
+<!--
+/**
+*   This page will be upload task from excel files
+*   Eric Fishman
+*   taskid PLR-501
+*   @module Leads
+*   @submodule FileUploader.page
+*/
+-->
+<apex:page controller="TaskUploaderController">
+       <apex:includeScript value="{!URLFOR($Resource.jquery, 'jquery.min.js')}"/>
+     <apex:includeScript value="{!URLFOR($Resource.jquery, 'papaparse.min.js')}"/>
+
+    <style>
+        .pageMessage {
+            display: none;
+        }
+        
+        .ssOverlay {
+            background: url("{!URLFOR($Resource.SLDS221, '/assets/images/spinners/slds_spinner_brand.gif')}") center center no-repeat;
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            top: 0px;
+            left: 0px;
+            z-index: 1000;
+            vertical-align: middle;
+            font-weight: bold;
+            font-size: 12pt;
+            color: red;
+            line-height: 2em;
+            display: none;
+            text-align: center;
+            opacity: 0.75;
+            background-color: #ffffff;
+        }
+        
+        .ssText {
+            display: table-cell;
+            vertical-align: middle;
+        }
+    </style>
+    <div id='ssOverlay' class='ssOverlay'></div>
+    <apex:outputPanel styleClass="pageMessage">
+        <apex:pageMessage severity="error" strength="1" />
+    </apex:outputPanel>
+    <apex:pageMessages id="message" />
+    <apex:form id="form">
+        <apex:pageBlock >
+            <apex:pageBlockButtons >
+                <apex:commandButton styleClass="parse" value="{!$Label.btnSave}" onclick="return false;"/>                
+            </apex:pageBlockButtons>
+            <apex:pageBlockSection showHeader="false" columns="1">
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel for="Type" value="{!$Label.type}" />
+                    <apex:outputPanel styleClass="requiredInput" layout="block">
+                        <!-- <apex:outputPanel styleClass="requiredBlock" layout="block"/>  -->
+                        <apex:selectList styleClass="TypeClass" value="{!fileType}" size="1" style="width:220px;position:relative;" accesskey="">
+                            <apex:selectOptions value="{!TaskRecordTypes}" />
+                        </apex:selectList>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$Label.Subject}:"/>
+                    <apex:inputfield value="{!inputDataFromVF.CallDisposition}" required="true" style="width:216px"/>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$Label.DueDate}:"/>
+                    <apex:inputfield value="{!inputDataFromVF.ActivityDate}" required="true" style="width:100px"/>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="{!$Label.file }" for="file"/>
+                    <input id="uploadCaptureInputFile" type="file" class="attachmentFile" accept=".csv"/>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                <apex:outputLabel value="{!$Label.Description}"/>
+                    <apex:inputfield value="{!inputDataFromVF.Description}" style="width: 485px; height: 87px;"/>
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+        </apex:pageBlock>
+        <apex:actionFunction action="{!catchCsvFile}" name="parseMethod" id="af" reRender="message,af" oncomplete="jQuery('.ssOverlay').hide()">
+            <apex:param name="csvFile" assignTo="{!csvFile}" value="" />
+        </apex:actionFunction>
+    </apex:form>
+    
+    <script>
+        $(document).ready(function() {
+            $('.parse').click(function() {
+                console.log('bingo');
+                if ($(".attachmentFile").val().length == 0) return;
+               
+               /* if(!$(".attachmentFile").val().endsWith(".csv")){
+                    $('.messageText > span > h4').text('{!$Label.errorManagerScreen}');
+                    $('.messageTable tr').eq(1).find('td').eq(1).html('{!$Label.CSVFileError}');
+                    $('.pageMessage').show();
+                    return;
+                }
+                */
+                //return;
+                jQuery('.ssOverlay').show(); 
+                $('.attachmentFile').parse({
+                    config: {
+                        header: true,
+                        encoding: "windows-1255",
+                        complete: completeFn,
+                        beforeFirstChunk: fixDate,
+                        skipEmptyLines: true
+                    }
+                });
+                return false;
+            });
+        });
+        function fixDate(file) {
+            file = file.replace(/\b(\d{2}\/\d{2}\/\d{4})\b/g, function(el) {
+                var dt = el.split('/');
+                return dt[2] + '-' + dt[1] + '-' + dt[0]
+            });
+            return file;
+        }
+        function completeFn() {
+            console.log("Finished input (async). Time:", arguments);
+            if (arguments[0].errors.length > 0) {
+                var errMsg = '';
+                $.each(arguments[0].errors, function(key, value) {
+                    errMsg += (errMsg != '' ? '<br>' : '') + 'Row: ' + value.row + ': Message: ' + value.message;
+                    if (key > 100) {
+                        return false;
+                    }
+                });
+                $('.messageText > span > h4').text('Error');
+                $('.messageTable tr').eq(1).find('td').eq(1).html(errMsg);
+                $('.pageMessage').show();
+            } else {
+                parseMethod(JSON.stringify(arguments[0].data));
+                document.getElementById("uploadCaptureInputFile").value = "";
+            }
+        }
+    </script>
+</apex:page>

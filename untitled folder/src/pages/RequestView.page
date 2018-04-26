@@ -1,0 +1,61 @@
+<apex:page standardController="Request__c" extensions="UserRecordAccessUtil" docType="html-5.0">
+    <apex:includeScript value="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"/>
+    <apex:includeScript value="/support/console/38.0/integration.js"/>
+    
+    
+    <style>
+        p.content-one {
+            display:none;
+        }
+        
+        .chatterShowHideFeed .expand-one img {
+            display: inline-block;
+            background-image: url(/img/chatter/sprites/sprite_images/chattersupersprite.png?v=194-2);
+            background-position: 0 -322px;
+            width: 16px;
+            height: 16px;
+        }
+    </style>
+    <script>
+        if('{!Request__c.Category__c}' == 'Commercial' && '{!Request__c.ParentRequestId__c}' != ''){
+            if(sforce.console.isInConsole()){
+                window.open('/{!Request__c.ParentRequestId__c}?isdtp=vw','_self');
+            }
+            else if ((typeof sforce != 'undefined') && (sforce != null)) {
+                sforce.one.navigateToURL('/{!Request__c.ParentRequestId__c}', true);
+            }
+            else{
+                window.open('/{!Request__c.ParentRequestId__c}','_self');
+            }
+        }
+        if(sforce.console.isInConsole()){
+            sforce.console.setTabTitle('{!$Label.RequestDetails}');
+        }
+    </script>
+    
+    <c:InsufficientPrivilegesError rendered="{!NOT hasReadAccess}"/>
+    
+    <apex:outputpanel rendered="{!hasReadAccess}">
+        <apex:outputPanel rendered="{!$User.UIThemeDisplayed != 'Theme4t'}">
+            <div class="sitesection chatterShowHideFeed">
+                <p class="expand-one"><a href="#"><img src="/img/s.gif"/><span class="linkText hideExpandClass">{!$Label.HideFeed}</span></a></p>
+                <div class="content-one">
+                    <chatter:feed entityId="{!Request__c.Id}"/>
+                </div>
+            </div>
+        </apex:outputPanel>
+        
+        <c:RequestViewEditComponent request="{!Request__c}" mode="view"/>
+        <br/>
+        <apex:relatedList list="ExternalAttachments__r" rendered="{!$User.UIThemeDisplayed != 'Theme4t'}"/>
+        <script>
+            $('.expand-one').click(function(){
+                $('.content-one').slideToggle('slow');
+                if($('.hideExpandClass').text() == '{!$Label.HideFeed}')
+                   $('.hideExpandClass').text('{!$Label.ShowFeed}');
+                else
+                    $('.hideExpandClass').text('{!$Label.HideFeed}'); 
+            });
+        </script>
+    </apex:outputpanel>
+</apex:page>

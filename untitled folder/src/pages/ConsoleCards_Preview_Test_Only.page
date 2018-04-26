@@ -1,0 +1,52 @@
+<!--
+/**
+    Console Cards Preview 
+*/
+-->
+<apex:page controller="vlocity_cmt.CardCanvasController" docType="html-5.0" applyHtmlTag="true" showHeader="false" sidebar="false" standardStylesheets="false" extensions="RTL_Support,LinkEnvSupport" cache="false">
+    <html xmlns:ng="http://angularjs.org" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" ng-app="myApp" class="ng-cloak"  style="height:100%"
+            dir="{!IF(isLanguageRTL, 'rtl', 'ltr')}" lang="{!currentLang}">
+        <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1"/>
+        <meta http-equiv="x-ua-compatible" content="IE=edge" />
+        <style type="text/css">
+            body {
+                margin: 0px !important;
+                padding: 0px !important;
+                background: #f9f9f9;
+            }
+        </style>
+
+
+<apex:stylesheet value="{!IF(isLanguageRTL, URLFOR($Resource.vlocity_rtl, '/assets/styles/salesforce-lightning-design-system-vf.rtl.min.css'), URLFOR($Resource.vlocity_rtl, '/assets/styles/salesforce-lightning-design-system-vf.min.css'))}"/>
+
+
+        <apex:stylesheet value="{!URLFOR($Resource.vlocity_cmt__vlocity_assets, '/css/vlocity.css')}"/>
+        
+        
+        <!--<script type="text/javascript">
+                window.currEnvironmentAllLinks={!urlLinkList};
+        </script>-->
+        
+        <!-- Salesforce Console API -->
+        <apex:includeScript value="/support/console/38.0/integration.js"/>
+        <apex:includeScript value="{!URLFOR($Resource.console_Resources, '/JS/cardLink.js')}"/>
+        
+        
+
+        </head>
+        <body>
+       <c:CellcomIconComponent_for_Test /> 
+
+            <!-- Component loads the vloc-layout and cards - defaults to grid if no layout parameter is present -->
+            <!-- <c:CardLayoutComponent layout="Grid" controllers="myCtrl" modules="myApp"/> -->
+
+            <vlocity_cmt:CardLayoutComponent layout="Grid" modules="myApp"/>
+
+            <script type="text/javascript">
+               var myApp = angular.module('myApp',['forceng','consoleCards']);
+            </script>
+
+        </body>
+    </html>
+</apex:page>

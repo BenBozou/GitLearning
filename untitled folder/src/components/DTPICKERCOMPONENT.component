@@ -1,0 +1,28 @@
+<apex:component >
+    <script>
+        (function(){
+            'use strict';
+            var dModule = angular.module('vlocity-business-process');
+            dModule.run((function(){
+                /*jshint -W030 */
+                $ && $.fn.datepicker && (function(){
+                    $.fn.datepicker.language['hb'] =  {
+                        days: [ "ראשון","שני","שלישי","רביעי","חמישי","שישי","שבת" ],
+                        daysShort: [ "א'","ב'","ג'","ד'","ה'","ו'","שבת" ],
+                        daysMin: [ "א'","ב'","ג'","ד'","ה'","ו'","שבת" ],
+                        months: [ "ינואר","פברואר","מרץ","אפריל","מאי","יוני",
+                                  "יולי","אוגוסט","ספטמבר","אוקטובר","נובמבר","דצמבר" ],
+                        monthsShort: [ "ינו","פבר","מרץ","אפר","מאי","יוני",
+                                       "יולי","אוג","ספט","אוק","נוב","דצמ" ],
+                        today:'היום',
+                        clear:'נקה',
+                        dateFormat: 'dd/mm/yy',
+                        timeFormat: 'hh:ii aa',
+                        added: 'true',
+                        firstDay: 0
+                    };
+                }());
+            })());
+        }());
+    </script>
+</apex:component>

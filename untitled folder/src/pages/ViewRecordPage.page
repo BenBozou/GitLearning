@@ -1,0 +1,63 @@
+<apex:page controller="viewRecord">
+
+<apex:form id="frm">
+
+    <apex:pageMessages /> 
+  <apex:pageblock >
+      
+      
+      <apex:pageblockSection >
+      
+          <apex:pageblockSectionItem >
+              <apex:outputLabel value="Select Object" />
+              <apex:selectList multiselect="false" id="objectType" value="{!objectType}" size="1">
+                  <apex:selectoptions value="{!objectoptions}" />
+              </apex:selectList>
+          </apex:pageblockSectionItem>
+          
+          <apex:pageblockSectionItem />
+          
+          <apex:pageblockSectionItem >
+              <apex:outputLabel value="Search by Id" />
+              <apex:inputText value="{!recordId}"/>
+          </apex:pageblockSectionItem>
+          
+          <apex:pageblockSectionItem />
+          
+          <apex:pageblockSectionItem >
+              <apex:outputLabel value="Search by name" />
+              <apex:inputText value="{!recordName}"/>
+          </apex:pageblockSectionItem>
+          
+          
+          
+      </apex:pageblockSection>
+      
+      <apex:pageBlockButtons location="top">    
+          <apex:commandButton value="Show Record" action="{!showRecord}" reRender="frm"/>
+      </apex:pageBlockButtons>
+  
+  </apex:pageblock>
+  
+  
+  <apex:pageBlock rendered="{!Not ISBlank(record)}">
+      <apex:pageBlockButtons location="top">    
+          <apex:commandButton value="Update" action="{!updateRecord}" rendered="{!Not ISBlank(record)}"/>
+      </apex:pageBlockButtons>
+  
+      <apex:pageblockSection >
+          <apex:repeat value="{!l_fields}" var="field">
+                <apex:pageblockSectionItem >
+                      <apex:outputLabel value="{!field}" />
+                      <apex:inputField value="{!record[field]}"/>
+                </apex:pageblockSectionItem>
+                
+                <apex:pageblockSectionItem />
+          </apex:repeat>
+      
+      </apex:pageblockSection>
+  </apex:pageBlock>
+  
+  
+</apex:form>
+</apex:page>

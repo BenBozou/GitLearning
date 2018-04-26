@@ -1,0 +1,20 @@
+<apex:page standardController="Request__c" extensions="UserRecordAccessUtil" docType="html-5.0">
+    <apex:includeScript value="/support/console/38.0/integration.js"/>
+    <script>
+        if('{!Request__c.Category__c}' == 'Commercial' && '{!Request__c.ParentRequestId__c}' != ''){
+            if(sforce.console.isInConsole()){
+                window.open('/{!Request__c.ParentRequestId__c}/e?isdtp=vw','_self');
+            }
+            else{
+                window.open('/{!Request__c.ParentRequestId__c}/e','_self');
+            }
+        }
+        if(sforce.console.isInConsole()){
+            sforce.console.setTabTitle('{!$Label.RequestDetails}');
+        }
+    </script>
+    
+    <c:InsufficientPrivilegesError rendered="{!NOT hasEditAccess}"/>
+    
+    <c:RequestViewEditComponent request="{!Request__c}" mode="edit" rendered="{!hasEditAccess}"/>
+</apex:page>

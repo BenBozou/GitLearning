@@ -1,0 +1,51 @@
+<apex:page standardController="Account"  extensions="RTL_Support" showHeader="true" sidebar="false"  
+           action="{!if($Profile.Name =='Vlocity Partner User', 
+                null, 
+                urlFor($Action.Account.View, 
+                $CurrentPage.parameters.id, null, true))}">
+    <html xmlns:ng="http://angularjs.org" ng-app="myApp" class="ng-cloak"  style="height:100%">
+        <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <apex:stylesheet value="{!IF(isLanguageRTL, URLFOR($Resource.vlocity_rtl, '/assets/styles/salesforce-lightning-design-system-vf.rtl.min.css'), URLFOR($Resource.vlocity_rtl, '/assets/styles/salesforce-lightning-design-system-vf.min.css'))}"/>
+    
+    <apex:includeScript value="/support/console/34.0/integration.js"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+
+        <apex:stylesheet value="{!URLFOR($Resource.vlocity_cmt__vlocity_assets, '/css/vlocity.css')}"/>
+    <apex:includeLightning />
+
+
+        </head>
+        <body>
+      <c:CellcomIconComponent />    
+      <!-- Cards -->
+
+      <c:VlocityCommunityCards layoutOverride="PartnerCommunityLayout"/>
+   
+            
+          
+            <script type="text/javascript">
+                // this is used to determine the sf instance url in the community environment.
+                // it is stored in localStorage such that later on vloc-card action can retrieve this url
+                // without this url, we would not be able to do any services/data or serevices/apexrest api call
+                var sfInstanceUrl = 'https://devw1-cellcom-devw1.cs83.force.com/partnerpoc/';
+                console.log('sfInstanceUrl fetched from CardCanvasController: ' + sfInstanceUrl);
+                localStorage.setItem('sfInstanceUrl', sfInstanceUrl);
+                console.log('sfInstanceUrl value stored in localStorage: ' + localStorage.getItem('sfInstanceUrl'));
+        
+                // this is used for launching Omniscript from community
+                // because in community we launch Omniscript in iframe using getInstanceUrl(), in case the Omniscript
+                // inside the iframe needs to communicate with the parent community page which the iframe is embedded in,
+                // both the community page url and the iframe url must be the same to avoid cross domain issues
+                var currentInstanceUrlWithPath = 'https://devw1-cellcom-devw1.cs83.force.com/partnerpoc';
+                console.log('currentInstanceUrlWithPath fetched from CardCanvasController: ' + currentInstanceUrlWithPath);
+                localStorage.setItem('currentInstanceUrlWithPath', currentInstanceUrlWithPath);
+                console.log('currentInstanceUrlWithPath value stored in localStorage: ' + localStorage.getItem('currentInstanceUrlWithPath'));
+            
+                var myApp = angular.module('myApp',['forceng','consoleCards']);
+             var myApp = angular.module('myApp2',['forceng','consoleCards']);
+            </script>
+         
+        </body>
+    </html>
+</apex:page>

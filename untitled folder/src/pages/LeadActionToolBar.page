@@ -1,0 +1,28 @@
+<apex:page standardController="Lead" cache="true" extensions="vlocity_cmt.VFPageControllerBase" showHeader="false" sidebar="false" docType="html-5.0" standardStylesheets="false" >
+
+        <apex:stylesheet value="{!URLFOR($Resource.vlocity_icons, '/css/vlocity-icons.css')}"/>
+          
+       <style>
+           
+       .vlocity .action-container .action-item {     
+            background-color: #f8f8f8;
+            border: 1px solid #dedede !important;
+            border-radius: 4px;
+       }
+       
+        .vlocity .action-container.action-vertical {    
+            display: inline-flex;
+        }   
+        
+        .vlocity .action-container.action-vertical {
+            margin-left: 40%;
+        }
+           
+       </style>
+       
+          <vlocity_cmt:ActionComponent standardController="{!stdController}"
+                                                              objType="Lead"
+                                                              style="Vertical"
+                                                              linkTypes="ConsoleBar"/> 
+
+</apex:page>

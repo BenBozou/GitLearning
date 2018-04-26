@@ -1,0 +1,59 @@
+<!--
+/**
+*   This page will be invoked outside the console and call remote action to get next lead
+*   Tal Sabati
+*   taskid PLR-635
+*   @module Leads
+*   @submodule GetNextLead.page
+*/
+-->
+<apex:page controller="GetNextLeadController">
+    <apex:includeScript value="{!URLFOR($Resource.jquery, 'jquery.min.js')}"/>
+    <script type="text/javascript">
+        function getCommunityUrl(url){
+            var communityPrefix = window.location.pathname.split('/')[1];
+            if(communityPrefix.indexOf('apex') !== 0){
+                url = '/' + communityPrefix + url;
+            }
+            return url;
+        }
+        
+        function getLeadUrl(consoleService){
+            //debugger;
+            ///001                        
+            
+            var sep = '?';
+            if(consoleService.interactionEvent.URL__c.indexOf('?') >= 0){
+                sep = '&';
+            }          
+            
+            // check if URL contains /001
+            var accId = '/001';
+            if (consoleService.interactionEvent.URL__c.indexOf(accId)==0 ) {            
+                return consoleService.interactionEvent.URL__c + sep + "leadUrl=" + encodeURIComponent(consoleService.interactionEvent.SubtabURL__c);
+            }
+            else if (consoleService.interactionEvent.SubtabURL__c != null){
+                return consoleService.interactionEvent.SubtabURL__c;
+            }
+            else {        
+                return consoleService.interactionEvent.URL__c ;
+            }
+        }
+        
+        $(document).ready(function() {
+            Visualforce.remoting.Manager.invokeAction('{!$RemoteAction.GetNextLeadController.getLeadFromClient}',
+                function(result, event){
+                    if (event.status) { 
+                        //window.open(result.URL__c,"_self")
+                        if(result.message != null)
+                            alert(result.message);
+                        else{
+                            window.location.href =getCommunityUrl(getLeadUrl(result));
+                        }
+                    }
+                }, 
+                {escape: false}
+            );
+        });;
+    </script>
+</apex:page>

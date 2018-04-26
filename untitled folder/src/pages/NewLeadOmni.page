@@ -1,0 +1,7 @@
+<apex:page standardController="Lead" extensions="NewLeadController" action="{!getRedirect}">
+<apex:includeScript value="/support/console/40.0/integration.js"/>
+<apex:stylesheet value="{!URLFOR($Resource.vlocity_icons, '/css/vlocity-icons.css')}"/>
+ <script type="text/javascript">
+       sforce.console.setTabTitle('My New Title');
+    </script>
+</apex:page>

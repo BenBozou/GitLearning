@@ -1,0 +1,14 @@
+<apex:component controller="RTL_Support">
+    <apex:outputpanel dir="{!IF(isLanguageRTL,'RTL','LTR')}">
+        <table cellspacing="10">
+            <tbody>
+                <tr>
+                    <td><span style="font-weight: bold; font-size: 12pt;">{!$Label.InsufficientPrivileges}</span></td>
+                </tr>
+                <tr>
+                    <td>{!$Label.InsufficientPrivilegesDetails}<br/><br/></td>
+                </tr>
+            </tbody>
+        </table>
+    </apex:outputpanel>
+</apex:component>

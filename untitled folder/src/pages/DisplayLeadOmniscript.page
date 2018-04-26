@@ -1,0 +1,32 @@
+<apex:page standardStylesheets="false" controller="LinkEnvSupport" showHeader="false" sidebar="false" docType="html-5.0">
+   <c:LeadOmniScriptStyle ></c:LeadOmniScriptStyle>
+   
+   <div class="vlocity via-slds via-slds1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" ng-app="{!$CurrentPage.parameters.omniScriptName}">
+      <script type="text/javascript">
+        window.currEnvironmentAllLinks={!urlLinkList};
+       //   console.log('currEnvironmentLink:' ,currEnvironmentLink);
+       
+       function test(str){
+           var currEnvironmentLink=window.currEnvironmentAllLinks[str.toUpperCase()];
+           // alert(currEnvironmentLink);    
+       }
+       </script>
+       <apex:includeScript value="{!URLFOR($Resource.console_Resources, '/JS/cardLink.js')}"/>
+         <vlocity_cmt:BusinessProcessComponent strOmniScriptType="Lead"
+            strOmniScriptSubType="Create"
+            strOmniScriptLang="English"
+            previewMode="{!$CurrentPage.parameters.previewEmbedded}"
+            verticalMode="{!$CurrentPage.parameters.verticalMode}"
+            strOmniScriptId="{!$CurrentPage.parameters.designerPreviewId}"
+            scriptLayout="lightning"/>
+        <vlocity_cmt:BusinessProcessHelperComponent />
+        <vlocity_cmt:JSONTreeHTMLTemplateComponent />
+        <script type="text/javascript">
+            var modules = ['vlocity-business-process'];
+            var myModule = angular.module("{!$CurrentPage.parameters.omniScriptName}", modules);
+        </script>
+
+    </div>
+    <vlocity_cmt:VFActionFunction /> 
+    
+</apex:page>

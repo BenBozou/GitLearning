@@ -1,0 +1,80 @@
+<apex:page docType="html-5.0" applyHtmlTag="false" showHeader="false" sidebar="false" standardStylesheets="false" extensions="vlocity_cmt.CardCanvasController" standardController="Lead" cache="false">
+    <html xmlns:ng="http://angularjs.org" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" ng-app="leadActionsApp" class="ng-cloak"  style="height:100%"
+            dir="{!IF(isLanguageRTL, 'rtl', 'ltr')}">
+        <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1"/>
+        <style type="text/css">
+            body {
+                margin: 0px !important;
+                padding: 0px !important;
+                background: #f9f9f9;
+            }
+            
+            .via-slds .slds-grid--align-space,
+            .via-slds .slds-grid--align-center {
+            
+                justify-content: flex-start;
+            }
+            
+            .via-slds .slds-wrap {
+                flex-wrap: nowrap;  
+            }
+            
+            .via-slds a.slds-button {
+                width:100% !important;
+            }
+            
+            .via-slds .slds-has-flexi-truncate {
+                font-weight:bold;
+                padding-right:5px;
+            }
+        </style>
+
+        <apex:stylesheet value="{!URLFOR($Resource.vlocity_cmt__vlocity_assets, '/css/vlocity.css')}"/>
+         
+        <!-- Salesforce Console API -->
+        <apex:includeScript value="/support/console/39.0/integration.js"/>
+        <apex:includeScript value="{!URLFOR($Resource.console_Resources, '/JS/cardLink.js')}" />
+
+        </head>
+        <body>
+
+            <!-- Component loads the vloc-layout and cards - defaults to Grid if no layout parameter is present -->
+          <!--{!Lead.Id} - ***-->
+            <vlocity_cmt:CardLayoutComponent layout="LeadDetailPageActions" modules="myActionsApp"/>
+
+
+            <script type="text/javascript">
+                var leadActionsApp = angular.module('leadActionsApp',['forceng','consoleCards']);
+                 
+                              
+                leadActionsApp.run(['interactionTracking', function($rootScope,$http, interactionTracking) {
+                // you can inject any instance here
+        
+                }]);
+                
+               
+                
+                //override to remove trackVlocityInteraction action
+                leadActionsApp.factory('interactionTracking', function() {
+                    return {
+                        getDefaultTrackingData : function() {
+                            return {};
+                        },
+                        addInteraction: function(interaction) {
+                            return null;
+                        },
+                        enqueueInteractions : function(interactions) {
+                            return null;
+                        }
+                    };
+                });
+                
+                
+                  
+                
+            </script>
+
+        </body>
+    </html>
+</apex:page>

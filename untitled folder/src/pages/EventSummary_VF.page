@@ -1,0 +1,215 @@
+<!--
+  @author - J.C
+  @date   - March 2017
+  @U.S    - PLR-976 Event Summary
+ 
+  @description
+        VF Page related to the "Event Summary" Process.
+        The page allows the user to summarize an event with the following information:
+            -   The Event fields.
+            -   The Internal/External participants.
+            -   Create tasks according to the event.
+            -   Send an email summarizing the event to:
+                - The Event Owner and the Event related contact as TO addresses
+                - The selected internal participants as CC addresses.
+ -->
+<apex:page controller="EventSummary_CTRL" tabStyle="Task">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <style type="text/css">
+        .gridCol1 {width:200px; text-align:left;}
+        .gridCol2 {width:400px; text-align:left;}
+        .gridCol3 {width: 70px; text-align:center;}
+        .gridCol4 {width:100px; text-align:center;}
+        
+        .apexp .bPageBlock.apexDefaultPageBlock .pbBody .pbSubheader {color: black;border-top: 0px;}
+    </style>
+    <script>
+    var sendEmail = function(el) {
+        $(el).prop('disabled', true).addClass('btnDisabled');
+    }
+    
+    var sendEmailCheck = function(el,result) {
+        if(!result) {
+            $(el).prop('disabled', result).removeClass('btnDisabled');
+        }
+    } 
+    </script>
+    <apex:form id="formId">
+        <apex:pageMessages id="msg" escape="false"/>
+        <div id='ssOverlay' class='ssOverlay'></div>
+        <apex:pageBlock title="{!$Label.EventSummary}" rendered="{!!PageError}">
+            <apex:pageBlockSection title="{!$Label.EventInformation}" columns="2" collapsible="false">
+                <apex:inputField value="{!eventToSummarize.Subject}" />
+                <apex:inputField value="{!eventToSummarize.Type}" />
+                <apex:inputField value="{!eventToSummarize.OwnerID}" />
+                <apex:inputField value="{!eventToSummarize.Related_Products__c}" />
+                <apex:inputField value="{!eventToSummarize.WhoId}">
+                    <!--><apex:actionsupport event="onchange" action="{!contactChanged}" reRender="formId" />-->
+                </apex:inputField>
+                <apex:inputField value="{!eventToSummarize.StartDateTime}" />
+                <apex:inputField value="{!eventToSummarize.WhatId}" />
+                <!--<apex:inputField value="{!EventToSummarize.ContactName__c}"/>-->
+                <apex:inputField value="{!eventToSummarize.EndDateTime}" />
+                <!--<apex:inputField value="{!EventToSummarize.ContactEmail__c}"/>-->
+                <apex:pageBlockSectionItem />
+            </apex:pageBlockSection>
+            <apex:pageBlockSection columns="1" title="{!$Label.EventDescription}" collapsible="false">
+                <apex:inputTextarea value="{!eventToSummarize.Description}" rows="4" style="width:80%" />
+            </apex:pageBlockSection>
+            <!--
+            <apex:pageBlockSection columns="1" title="{!$Label.CustomerParticipants}">
+                <apex:inputTextarea value="{!eventToSummarize.Customer_Participants__c}" rows="4" style="width:80%" />
+            </apex:pageBlockSection>
+            -->
+            
+            <apex:pageBlockSection columns="1" title="{!$Label.Participants}" collapsible="false">
+                <apex:pageBlockTable value="{!participantsList}" var="participant" style="width:830px;border:0px;" columnsWidth="50px,150px,170px,150px,240px,70px">
+                    <apex:variable value="{!0}" var="customerRowNum"/>
+                    <apex:column headerValue="{!$Label.Action}" style="border:0px;">
+                        <apex:commandLink value="{!$Label.Remove}" action="{!removeRowFromParticipants}" immediate="false" style="width:30px" reRender="formId">
+                            <apex:param value="{!customerRowNum}" name="rowToRemove" assignTo="{!rowToRemove}"/>
+                        </apex:commandlink>
+                        <apex:variable var="customerRowNum" value="{!customerRowNum + 1}"/>
+                    </apex:column>
+                    <apex:column headerValue="{!$Label.NameRelatedList}" style="border:0px;">
+                        <apex:inputText value="{!participant.participantName}" style="width:130px"/>
+                    </apex:column>
+                    <apex:column headerValue="{!$ObjectType.Event.fields.ParticipantsType__c.Label}" style="border:0px;">
+                        <apex:inputField value="{!participant.tempEvent.ParticipantsType__c}" style="width:150px" required="true"/>
+                    </apex:column>
+                    <apex:column headerValue="{!$ObjectType.Event.fields.ParticipantsSubType__c.Label}" style="border:0px;">
+                        <apex:inputField value="{!participant.tempEvent.ParticipantsSubType__c}" style="width:130px"/>
+                    </apex:column>
+                    <apex:column headerValue="{!$Label.Email}" style="border:0px;">
+                        <apex:inputText value="{!participant.participantEmail}" style="width:220px"/>
+                    </apex:column>
+                    <apex:column headerValue="{!$Label.SendEmail}" style="border:0px;">
+                        <apex:inputCheckbox value="{!participant.participantSendEmail}" style="width:50px"/>
+                    </apex:column>
+                </apex:pageBlockTable>
+            </apex:pageBlockSection>
+            
+            <!--
+            <apex:pageBlockSection columns="1" title="{!$Label.CustomerParticipants}">
+                <apex:pageBlockTable value="{!customerParticipantsList}" var="participant" style="width:580px;border:0px;" columnsWidth="70px,70px,170px,270px">
+                    <apex:variable value="{!0}" var="customerRowNum"/>
+                    <apex:column headerValue="Action" style="border:0px;">
+                        <apex:commandLink value="Remove" action="{!removeRowFromCustomerParticipants}" immediate="false" style="width:50px" reRender="formId">
+                            <apex:param value="{!customerRowNum}" name="rowToRemove" assignTo="{!rowToRemove}"/>
+                        </apex:commandlink>
+                        <apex:variable var="customerRowNum" value="{!customerRowNum + 1}"/>
+                    </apex:column>
+                    
+                    <apex:column headerValue="Send Email" style="border:0px;">
+                        <apex:inputCheckbox value="{!participant.participantSendEmail}" style="width:50px"/>
+                    </apex:column>
+                    <apex:column headerValue="Name" style="border:0px;">
+                        <apex:inputText value="{!participant.participantName}" style="width:150px"/>
+                    </apex:column>
+                    <apex:column headerValue="Email" style="border:0px;">
+                        <apex:inputText value="{!participant.participantEmail}" style="width:250px"/>
+                    </apex:column>
+                </apex:pageBlockTable>
+                <apex:commandButton value="Add Participants" action="{!AddCustomerParticipants}" reRender="formId" styleClass="slds-button"/>
+            </apex:pageBlockSection>
+            
+            <apex:pageBlockSection columns="1" title="{!$Label.CellcomParticipants}">
+                <apex:inputField label="Search for a User" value="{!tempEvent.SecondaryOwner__c}"/>
+                
+                <apex:panelGrid columns="4" id="theGrid" columnClasses="gridCol1, gridCol2, gridCol3, gridCol4" border="0" cellpadding="5" cellspacing="5">
+                    <apex:outputText value="" style="font-weight: bold"/>
+                    <apex:outputText value="Participants Names" style="font-weight: bold"/>
+                    <apex:outputText value="Send Email" style="font-weight: bold"/>
+                    <apex:outputText value="Action" style="font-weight: bold"/>
+                                    
+                    <apex:outputLabel value="{!$ObjectType.Event.fields.Cellcom_Manager_Participants__c.Label}" styleClass="labelCol"/>
+                    <apex:outputField value="{!eventToSummarize.Cellcom_Manager_Participants__c}" style="width:100%" />
+                    <apex:inputCheckbox value="{!sendEmailToCellcomManager}" />
+                    <apex:commandButton value="{!$Label.AddParticipant}" action="{!AddManagerParticipant}" reRender="formId" />
+                    
+                    <apex:outputLabel value="{!$ObjectType.Event.fields.Cellcom_Sales_Participants__c.Label}" styleClass="labelCol"/>
+                    <apex:outputField value="{!eventToSummarize.Cellcom_Sales_Participants__c}" style="width:100%" />
+                    <apex:inputCheckbox value="{!sendEmailToCellcomSales}" />
+                    <apex:commandButton value="{!$Label.AddParticipant}" action="{!AddSalesParticipant}" reRender="formId" styleClass="slds-button" />
+                    
+                    <apex:outputLabel value="{!$ObjectType.Event.fields.Cellcom_PreSales_Participants__c.Label}" styleClass="labelCol"/>
+                    <apex:outputField value="{!eventToSummarize.Cellcom_PreSales_Participants__c}" style="width:100%" />
+                    <apex:inputCheckbox value="{!sendEmailToCellcomPreSales}" />
+                    <apex:commandButton value="{!$Label.AddParticipant}" action="{!AddPreSalesParticipant}" reRender="formId" styleClass="slds-button" />
+                    
+                    <apex:outputLabel value="{!$ObjectType.Event.fields.Cellcom_Marketing_Participants__c.Label}" styleClass="labelCol"/>
+                    <apex:outputField value="{!eventToSummarize.Cellcom_Marketing_Participants__c}" style="width:100%" />
+                    <apex:inputCheckbox value="{!sendEmailToCellcomMarketing}" />
+                    <apex:commandButton value="{!$Label.AddParticipant}" action="{!AddMarketingParticipant}" reRender="formId" styleClass="slds-button" />
+                </apex:panelGrid>
+            </apex:pageBlockSection>
+            -->
+            <apex:pageBlockSection columns="1" title="{!$Label.AdditionalParticipants}" collapsible="false">
+                <apex:pageBlockTable value="{!additionalParticipantsList}" var="participant" style="width:830px;border:0px;" columnsWidth="50px,150px,170px,150px,240px,70px">
+                    <apex:variable value="{!0}" var="additionalRowNum"/>
+                    <apex:column headerValue="{!$Label.Action}" style="border:0px;">
+                        <apex:commandLink value="{!$Label.Remove}" action="{!removeRowFromAddtionalParticipants}" immediate="false" style="width:30px" reRender="formId">
+                            <apex:param value="{!additionalRowNum}" name="rowToRemove" assignTo="{!rowToRemove}"/>
+                        </apex:commandlink>
+                        <apex:variable var="additionalRowNum" value="{!additionalRowNum + 1}"/>
+                    </apex:column>
+                    <apex:column headerValue="{!$Label.NameRelatedList}" style="border:0px;">
+                        <apex:inputText value="{!participant.participantName}" style="width:130px"/>
+                    </apex:column>
+                    <apex:column headerValue="{!$ObjectType.Event.fields.ParticipantsType__c.Label}" style="border:0px;">
+                        <apex:inputField value="{!participant.tempEvent.ParticipantsType__c}" style="width:150px" required="true"/>
+                    </apex:column>
+                    <apex:column headerValue="{!$ObjectType.Event.fields.ParticipantsSubType__c.Label}" style="border:0px;">
+                        <apex:inputField value="{!participant.tempEvent.ParticipantsSubType__c}" style="width:130px"/>
+                    </apex:column>
+                    <apex:column headerValue="{!$Label.Email}" style="border:0px;">
+                        <apex:inputText value="{!participant.participantEmail}" style="width:220px"/>
+                    </apex:column>
+                    <apex:column headerValue="{!$Label.SendEmail}" style="border:0px;">
+                        <apex:inputCheckbox value="{!participant.participantSendEmail}" style="width:50px"/>
+                    </apex:column>
+                </apex:pageBlockTable>
+                <apex:commandButton value="{!$Label.AddParticipants}" action="{!AddAdditionalParticipants}" reRender="formId" styleClass="slds-button"/>
+            </apex:pageBlockSection>
+            
+            <apex:pageBlockButtons location="">
+                <apex:commandButton value="{!$Label.NewTask}" rendered="{!!DisplayTaskCreation}" action="{!CreateTask}" reRender="formId" />
+                <apex:commandButton value="{!$Label.SaveEvent}" rendered="{!!DisplayTaskCreation}" action="{!SaveEvent}" reRender="formId" />
+                <apex:commandButton value="{!$Label.SendEmail}" rendered="{!!DisplayTaskCreation}" action="{!SendEventSummaryEmail}" reRender="msg" onclick="sendEmail(this)" oncomplete="sendEmailCheck(this,{!result})"/>
+                <apex:commandButton value="{!$Label.GoBack}" rendered="{!!DisplayTaskCreation}" action="{!GoBack}" />
+            </apex:pageBlockButtons>
+        </apex:pageBlock>
+        <apex:pageBlock title="{!$Label.NewTask}" id="NewTaskPageBlock" rendered="{!DisplayTaskCreation && !PageError}">
+            <apex:pageBlockSection columns="2" rendered="{!DisplayTaskCreation}" collapsible="false">
+                <apex:inputField value="{!newRelatedTask.Subject}" />
+                <apex:inputField value="{!newRelatedTask.ActivityDate}" />
+                <apex:inputField value="{!newRelatedTask.status}" />
+                <apex:inputField value="{!newRelatedTask.Priority}" />
+                <apex:inputField value="{!newRelatedTask.WhoID}" />
+                <apex:inputField value="{!newRelatedTask.WhatId}" />
+                <apex:inputField value="{!newRelatedTask.OwnerId}" />
+                <apex:inputField value="{!newRelatedTask.SecondaryOwner__c}" />
+            </apex:pageBlockSection>
+            <apex:pageBlockSection columns="1" rendered="{!DisplayTaskCreation}" collapsible="false">
+                <apex:inputField value="{!newRelatedTask.Description}" style="height: 100px; width: 800px;"/>
+            </apex:pageBlockSection>
+            <apex:pageBlockButtons location="">
+                <apex:commandButton value="{!$Label.SaveTask}" action="{!SaveTask}" reRender="formId" />
+                <apex:commandButton value="{!$Label.Cancel}" action="{!Cancel}" immediate="true" reRender="formId" />
+            </apex:pageBlockButtons>
+        </apex:pageBlock>
+        <apex:pageBlock title="{!$Label.EventRelatedTasks}" id="RelatedTaskPageBlock" rendered="{!!PageError}">
+            <apex:pageBlockTable value="{!relatedTaskList}" var="currentTask">
+                <apex:column headerValue="{!$ObjectType.Task.fields.Subject.Label}">
+                    <apex:outputLink value="/{!currentTask.Id}">{!currentTask.Subject}</apex:outputLink>
+                </apex:column>
+                <apex:column value="{!currentTask.ActivityDate}" />
+                <apex:column value="{!currentTask.status}" />
+                <apex:column value="{!currentTask.Priority}" />
+                <apex:column value="{!currentTask.WhoID}" />
+                <apex:column value="{!currentTask.WhatId}" />
+                <apex:column value="{!currentTask.OwnerId}" />
+            </apex:pageBlockTable>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

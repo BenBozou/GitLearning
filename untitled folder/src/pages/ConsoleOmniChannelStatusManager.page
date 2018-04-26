@@ -1,0 +1,46 @@
+<apex:page sidebar="false" docType="html-5.0">
+    <apex:includeScript value="/support/console/38.0/integration.js"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+    <a href="#" onclick="login()">login</a>
+    <div id="test"></div>
+    <script type="text/javascript">
+    
+    sforce.console.addEventListener(sforce.console.ConsoleEvent.PRESENCE.WORK_ASSIGNED, function manageAW(result) {
+        var parenttbl = document.getElementById("test");
+        parenttbl.innerHTML += 'New assignment: ' + result.workItemId + " " + result.workId;
+    });
+    
+    sforce.console.addEventListener(sforce.console.ConsoleEvent.PRESENCE.LOGIN_SUCCESS, function manageAW(result) {
+        var parenttbl = document.getElementById("test");
+        parenttbl.innerHTML += 'Login success';
+    });
+    
+    sforce.console.addEventListener(sforce.console.ConsoleEvent.PRESENCE.STATUS_CHANGED, function manageAW(result) {
+        var parenttbl = document.getElementById("test");
+        parenttbl.innerHTML += 'Status changed';
+    });
+    
+    sforce.console.addEventListener(sforce.console.ConsoleEvent.PRESENCE.LOGOUT, function manageAW(result) {
+        var parenttbl = document.getElementById("test");
+        parenttbl.innerHTML += 'Logout';
+    });
+    
+    function login() {
+        $('#scc_widget_servicePresence_button').attr('style','display:none');
+        var parenttbl = document.getElementById("test");
+        sforce.console.presence.setServicePresenceStatus('0N54E000000008w', function(result) {
+            if (result.success) {
+                //alert('Set status successful');
+                //alert('Current statusId is: ' + result.statusId);
+                //alert('Channel list attached to this status is: ' + result.channels);
+                //printout in console for lists
+            } else {
+                login();
+            }
+        });
+    }
+    
+    $(document).ready(login)
+    
+</script>
+</apex:page>

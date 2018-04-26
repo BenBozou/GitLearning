@@ -1,0 +1,61 @@
+<apex:page standardController="Log__c" docType="HTML-5.0" sidebar="false" showHeader="false" standardStylesheets="false">
+    <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- lang="iw" dir="rtl"-->
+
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    </head>
+
+    <script>
+        var app = angular.module('logViewApp', [])
+            .controller('logCtrl', ['$scope', '$rootScope', function($scope, $rootScope) {
+                $scope.recordOrigin = "{!JSENCODE(Log__c.Message__c)}";
+                $scope.record = JSON.parse($scope.recordOrigin);
+                $rootScope.request = JSON.parse($scope.record.request);
+                $rootScope.response = JSON.parse($scope.record.response);
+            }]);
+
+    </script>
+
+    <apex:slds />
+
+    <div ng-app="logViewApp" class="slds-scope">
+        <div ng-controller="logCtrl">
+            <div class="slds-grid">
+                <div class="slds-col  slds-size_1-of-2">
+                    <div class="slds-box" style="height:100%">
+                        <div class="slds-section slds-is-open">
+                            <h3 class="slds-section__title">
+                                <button aria-controls="expando-unique-id" aria-expanded="true" class="slds-button slds-section__title-action">
+                                    <span class="slds-truncate" title="Section Title"><b>Request</b></span>
+                                </button>
+                            </h3>
+                            <div aria-hidden="false" class="slds-section__content" id="expando-unique-id">
+                                <pre>{{$root.request | json}}</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="slds-col  slds-size_1-of-2">
+                    <div class="slds-box" style="height:100%">
+                        <div class="slds-section slds-is-open">
+                            <h3 class="slds-section__title">
+                                <button aria-controls="expando-unique-id" aria-expanded="true" class="slds-button slds-section__title-action">
+                                    <span class="slds-truncate" title="Section Title"><b>Response</b></span>
+                                </button>
+                            </h3>
+                            <div aria-hidden="false" class="slds-section__content" id="expando-unique-id">
+                                <pre>{{$root.response | json}}</pre>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    </html>
+    <apex:includeScript value="//ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js" />
+
+</apex:page>

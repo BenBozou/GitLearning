@@ -1,0 +1,110 @@
+<!--  
+*   this psge will be placed in the Lead console sidebar and will display Lead and related Tasks info
+*   autor  Elad Kaplan
+-->
+<apex:page standardController="Lead" standardStylesheets="false" showHeader="false" extensions="LeadConsoleSideBarController" docType="html-5.0" applyHtmlTag="true">
+    <html dir="{!IF(isLanguageRTL, 'rtl', 'ltr')}">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="x-ua-compatible" content="IE=edge" />
+    <apex:stylesheet value="{!URLFOR($Resource.leadStory)}" />
+  
+    <div class="slds-p-around--medium {!IF(isLanguageRTL, 'slds-text-align--right', 'slds-text-align--left')}">
+        <div class="firstName">
+            {!Lead.FirstName}
+        </div>
+        <div class="lastName">
+            {!Lead.LastName}
+        </div>
+        
+         <apex:outputpanel rendered="{!Lead.Id == null}">
+          <div class="firstName">
+            ליד חדש
+        </div>   
+        </apex:outputpanel>
+        
+        <apex:outputpanel rendered="{!Lead.Phone != null}">
+        <div class="slds-text-heading--small phone">
+            {!Lead.Phone} מספר טלפון
+        </div>
+        </apex:outputpanel>
+    </div>
+    <apex:slds >
+        <apex:repeat value="{!relatedTasks}" var="currentTask">
+            <br/>
+            <div class="slds-media slds-media--timeline">
+                <span class="svgTasksIcon">
+                    <svg aria-hidden="true" class="slds-icon slds-icon--small slds-icon-custom-custom91"
+                        xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" sprite="$root.cardIconFactory(obj.attributes.type + ' ' + obj.title).sprite" icon="$root.cardIconFactory(obj.attributes.type + ' ' + obj.title).icon" size="'small'" extra-classes="'slds-icon-' + $root.cardIconFactory(obj.attributes.type + ' ' + obj.title).sprite + '-' + $root.cardIconFactory(obj.attributes.type + ' ' + obj.title).icon" no-hint="true" ng-if="!data.sprite || !data.icon" viewBox="0 0 100 100">
+                        <g fill="inherit"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path d="m77.8 32.6c-3-0.9-5.6-3-7.3-5.7-1.3-2.1-1.4-6.9-4.6-6.9h-31.8c-3.3 0-3.3 4.8-4.6 6.9-2.1 3.3-4.8 4.1-8 6-3.3 1.9-0.2 9.9 0.5 12.7 3.1 11.1 9 21.4 18.2 28.7 2.6 2.1 5.4 3.9 8.4 5.4 2.7 1.4 7.2-2.5 9.2-4 5.2-3.7 9.5-8.4 12.9-13.7 2.9-4.6 5.1-9.6 6.7-14.8 0.6-2.1 1.2-4.2 1.6-6.4 0.4-1.8 1.3-4.6 0.7-6.4-0.2-0.8-1-1.5-1.9-1.8-4.6-1.4 1.4 0.4 0 0z m-4.4 7c-2.7 13.4-9.9 25.9-21.8 33.2l-1.6 1-1.6-1c-14.4-8.8-19.8-22.9-21.8-33.2l-0.4-2.1 1.8-1.1c3.1-1.9 6-5.2 7.7-8.7l0.8-1.8h27l0.5 1.3c1.7 3.8 4.8 7.4 8.5 9.5l1.3 0.7v0.1l-0.4 2.1z m-24.5-7.6c-2.3 0-7.9 0-9 1-1.9 1.7-3 4.2-5 5.9-2.1 1.8-1.1 3.6-0.4 6 1.4 4.2 3.3 8.3 5.9 12 1.3 1.9 2.8 3.7 4.5 5.3 0.5 0.5 5.1 5.1 5.1 2.2v-30.4c0-1.1 0-2-1.1-2z"></path>
+                        </g>
+                    </svg>
+                </span>
+                <ul class="slds-list--vertical slds-wrap">
+                    <apex:outputpanel rendered="{!currentTask.Description != null}">
+                        <li class="slds-m-right--large">
+                            <span>    תעוד:  </span>
+                            <span> {!currentTask.Description} </span>
+                        </li>
+                    </apex:outputpanel>
+                    <apex:outputpanel rendered="{!currentTask.ActivityDate != null}">
+                    <li class="slds-m-right--large">
+                        <span>  תאריך: </span>
+                        <apex:outputfield value="{!currentTask.ActivityDate}" />
+                    </li>
+                    </apex:outputpanel>
+                    <apex:outputpanel rendered="{!currentTask.Owner.Name != null}"> 
+                    <li class="slds-m-right--large">
+                        <span>  נציג:  </span>
+                        <span> {!currentTask.Owner.Name} </span>
+                    </li>
+                    </apex:outputpanel>
+                    <apex:outputpanel rendered="{!currentTask.Product__r.Name != null}">
+                        <li class="slds-m-right--large">
+                            <span>   מוצר:  </span>
+                            <span> {!currentTask.Product__r.Name} </span>
+                        </li>
+                    </apex:outputpanel>
+                    <apex:outputpanel rendered="{!currentTask.LeadStatus__c != null}">
+                        <li class="slds-m-right--large">
+                            <span>  סטטוס:  </span>
+                            <span> {!currentTask.LeadStatus__c} </span>
+                        </li>
+                    </apex:outputpanel>
+                    <apex:outputpanel rendered="{!currentTask.LeadSubStatus__c != null}">
+                        <li class="slds-m-right--large">
+                            <span>  סיבת דחייה:  </span>
+                            <span> {!currentTask.LeadSubStatus__c} </span>
+                        </li>
+                    </apex:outputpanel>
+                </ul>
+                  <div class="slds-dropdown {!IF(isLanguageRTL, 'slds-dropdown--left', 'slds-dropdown--right')}">  
+                    <a href="javascript:void(0)" onclick="openTaskSubtab('{!currentTask.Id}');" class="ahref">
+                    {!$Label.More_Details}
+                    <span class="icon big icon-v-edit ahref"/>  
+                    </a>
+                 </div>
+            </div>
+        </apex:repeat>
+    </apex:slds>
+    <apex:includeScript value="/support/console/38.0/integration.js" />
+    <script type="text/javascript">
+        var theId;
+        function openTaskSubtab(taskId) {
+            theId = taskId;
+            sforce.console.getEnclosingPrimaryTabId(openSubtab);
+        }
+        var openSubtab = function openSubtab(result) {
+            var primaryTabId = result.id;
+            var tabName = 'taskIdTab';
+            sforce.console.openSubtab(primaryTabId, '/' + theId, false, 'פירוט משימה', null, openSuccess, tabName);
+        };
+        var openSuccess = function openSuccess(resultSubTab) {
+            if (resultSubTab.success == true) {
+                sforce.console.focusSubtabById(resultSubTab.id, null);
+            }
+        };
+    </script>
+    </html>
+</apex:page>

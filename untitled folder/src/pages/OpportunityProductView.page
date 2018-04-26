@@ -1,0 +1,118 @@
+<apex:page standardController="OpportunityLineItem" extensions="OpportunityProductEditController"
+           showHeader="true" sidebar="true" standardStylesheets="true" tabStyle="Account">
+<apex:includeScript value="/support/console/38.0/integration.js"/>
+<script>    
+    if(sforce && sforce.console.isInConsole())
+        sforce.console.setTabTitle('{!oppItemName}');
+    
+    function createRequest(){
+        var url = '/apex/RequestForm?oliId={!OpportunityLineItem.Id}';
+        if(sforce && sforce.console.isInConsole()){
+            sforce.console.getEnclosingPrimaryTabId(function openSubtab(result){
+                var primaryTabId = result.id;
+                sforce.console.openSubtab(primaryTabId,url,true,'',null,null,'');
+            });
+        }
+        else{
+            parent.location.href = url;
+        }
+    }
+</script>            
+<apex:pageMessages escape="false"></apex:pageMessages>  
+    <apex:form >
+        <apex:sectionHeader subtitle="{!oppItemName}" title="Opportunity Product Edit">    
+        <apex:pageBlock >
+                <apex:pageBlockButtons >
+                    <apex:commandButton id="Edit" value="{!$Label.btnEdit}" action="{!Edit}" />
+                    <apex:commandButton id="Split" value="{!$Label.btnSplit}" action="{!Split}" />  
+                    <apex:commandButton id="NewRequest" value="{!$Label.RequestCreation}" onclick="createRequest();return false;"/>
+                </apex:pageBlockButtons>                 
+            <apex:pageBlockSection title="{!$Label.General_1}" >
+                    <apex:repeat value="{!General_1}" var="f" id="repgen1">                        
+                        <apex:outputField value="{!oppLineItem[f.fieldPath]}" id="infmaing1O" />
+                    </apex:repeat>
+                </apex:pageBlockSection>      
+
+             <apex:pageBlockSection title="{!$Label.Hosting_1}" rendered="{!enableHosting}">
+                    <apex:repeat value="{!Hosting_1}" var="f" id="rephost1">                        
+                      <apex:outputField value="{!oppLineItem[f.fieldPath]}" id="infmaing1O" />
+                    </apex:repeat>
+                </apex:pageBlockSection>
+                
+            <apex:pageBlockSection title="{!$Label.Hosting_2}" rendered="{!enableHosting}">
+                    <apex:repeat value="{!Hosting_2}" var="f" id="rephost2">
+                        <apex:outputField value="{!oppLineItem[f.fieldPath]}" id="infmainh2" />
+                    </apex:repeat>
+                </apex:pageBlockSection>
+            <apex:pageBlockSection title="{!$Label.Hosting_3}" rendered="{!enableHosting}">
+                    <apex:repeat value="{!Hosting_3}" var="f" id="rephost3">
+                        <apex:outputField value="{!oppLineItem[f.fieldPath]}" id="infmain"  />
+                    </apex:repeat>
+                </apex:pageBlockSection>
+            
+            <apex:pageBlockSection title="{!$Label.Telephony_1}" rendered="{!enableTelephony}">
+                    <apex:repeat value="{!Telephony_1}" var="f" id="reptel1">
+                        <apex:outputField value="{!oppLineItem[f.fieldPath]}"
+                            id="infmain"  />
+                    </apex:repeat>
+                </apex:pageBlockSection>
+             <apex:pageBlockSection title="{!$Label.Telephony_2}" rendered="{!enableTelephony}">
+                    <apex:repeat value="{!Telephony_2}" var="f" id="reptel2">
+                        <apex:outputField value="{!oppLineItem[f.fieldPath]}" id="infmain"  />
+                    </apex:repeat>
+                </apex:pageBlockSection>
+             <apex:pageBlockSection title="{!$Label.Telephony_3}" rendered="{!enableTelephony}">
+                    <apex:repeat value="{!Telephony_3}" var="f" id="reptel3">
+                        <apex:outputField value="{!oppLineItem[f.fieldPath]}" id="infmain" />
+                    </apex:repeat>
+                </apex:pageBlockSection>
+            <apex:pageBlockSection title="{!$Label.Transmition}" rendered="{!enableTransmition}">
+                    <apex:repeat value="{!Transmition}" var="f" id="reptransm">
+                        <apex:outputField value="{!oppLineItem[f.fieldPath]}" id="infmain" />
+                    </apex:repeat>
+                </apex:pageBlockSection>
+            <apex:pageBlockSection title="{!$Label.Cellular_1}" rendered="{!enableCellular}">
+                    <apex:repeat value="{!Cellular_1}" var="f" id="repcel1">                        
+                        <apex:outputField value="{!oppLineItem[f.fieldPath]}" id="infmaingc1O" />
+                    </apex:repeat>
+                </apex:pageBlockSection>
+            <!--     
+            <apex:pageBlockSection title="{!$Label.Cellular_2}" rendered="{!enableCellular}">
+                    <apex:repeat value="{!Cellular_2}" var="f" id="repcel2">                        
+                        <apex:outputField value="{!oppLineItem[f.fieldPath]}" id="infmaingc1O" />
+                    </apex:repeat>
+                </apex:pageBlockSection>
+                
+              -->   
+             <apex:pageBlockSection title="{!$Label.OneTime_Cellular1}" rendered="{!enableOneTimeCellular}">
+                    <apex:repeat value="{!OneTime_Cellular1}" var="f" id="reponecel1">                        
+                        <apex:outputField value="{!oppLineItem[f.fieldPath]}" id="infmaingoc11" />
+                    </apex:repeat>
+             </apex:pageBlockSection>
+            <apex:pageBlockSection title="{!$Label.OneTime_Cellular2}" rendered="{!enableOneTimeCellular}">
+                    <apex:repeat value="{!OneTime_Cellular2}" var="f" id="reponecel2">                        
+                        <apex:outputField value="{!oppLineItem[f.fieldPath]}" id="infmaingoc12" />
+                    </apex:repeat>
+                </apex:pageBlockSection>
+            <apex:pageBlockSection title="{!$Label.OneTime_Cellular3}" rendered="{!enableOneTimeCellular}">
+                    <apex:repeat value="{!OneTime_Cellular3}" var="f" id="reponecel3">                        
+                        <apex:outputField value="{!oppLineItem[f.fieldPath]}" id="infmaingoc13" />
+                    </apex:repeat>
+            </apex:pageBlockSection>
+                 
+            <apex:pageBlockSection title="{!$Label.General_2}">
+                    <apex:repeat value="{!General_2}" var="f" id="repgen2">                        
+                        <apex:outputField value="{!oppLineItem[f.fieldPath]}" id="infmaing2O" />
+                    </apex:repeat>
+                </apex:pageBlockSection>
+            <apex:pageBlockSection title="{!$Label.General_3}">
+                    <apex:repeat value="{!General_3}" var="f" id="repgen3">                        
+                        <apex:outputField value="{!oppLineItem[f.fieldPath]}" id="infmaing3O" />
+                    </apex:repeat>
+                </apex:pageBlockSection>
+            </apex:pageBlock>
+        </apex:sectionHeader>
+    </apex:form>    
+    
+
+</apex:page>

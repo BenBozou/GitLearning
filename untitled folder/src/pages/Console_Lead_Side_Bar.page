@@ -1,0 +1,105 @@
+<!--
+/**
+*   this psge will be invoked from Lead console layout. Also this page used a layout 'cellcom-sidebar' from Vlocity
+*   autor  Dmitry Rivlin
+*   taskId PLR-304
+*   @submodule ConsoleSidebar.page
+*/
+-->
+
+<apex:page controller="vlocity_cmt.CardCanvasController" cache="true" docType="html-5.0" applyHtmlTag="true" showHeader="false" sidebar="false" standardStylesheets="false" extensions="LinkEnvSupport">
+
+<html dir="{!IF(isLanguageRTL, 'rtl', 'ltr')}" lang="{!currentLang}">
+<style type="text/css">
+        body {
+                margin: 0px !important;
+                padding: 0px !important;
+                background: #FFF;
+        }
+</style>
+
+
+<apex:stylesheet value="{!URLFOR($Resource.vlocity_cmt__vlocity_assets, '/css/vlocity.css')}"/>
+<apex:includeScript value="/support/console/38.0/integration.js"/>
+<apex:includeLightning />
+
+<apex:stylesheet value="{!IF(isLanguageRTL, URLFOR($Resource.vlocity_rtl, '/assets/styles/salesforce-lightning-design-system-vf.rtl.min.css'), URLFOR($Resource.vlocity_rtl, '/assets/styles/salesforce-lightning-design-system-vf.min.css'))}"/>
+
+<div class="vlocity via-slds" ng-app="sidebarApp" ng-controller="accountCtrl">
+        <!-- Sidebar layout-->
+        <vloc-layout layout-name="Lead-console-sidebar" layout-id="{{layoutId}}"/>
+</div>
+
+<script src="{!URLFOR($Resource.vlocity_cmt__vlocity_assets, '/javascripts/vlocity.js')}"></script>
+<script src="{!URLFOR($Resource.vlocity_cmt__vlocity_assets, '/bower_components/forceng/forceng.js')}"></script>
+<script src="{!URLFOR($Resource.vlocity_cmt__vlocity_assets, '/bower_components/ForceTK/forcetk.js')}"></script>
+<script src="{!$Resource.vlocity_cmt__CardFramework}"></script>
+<script src="{!$Resource.vlocity_cmt__SldsAngular}"></script>
+
+<script type="text/javascript">
+
+        var layoutName = 'Lead-console-sidebar';
+        var sideBarModule = angular.module('sidebarApp',['vlocity','CardFramework', 'forceng', 'cfp.hotkeys']);
+
+        sideBarModule.config(['$localizableProvider', function($localizableProvider) {
+            'use strict';
+            $localizableProvider.setLocalizedMap(window.i18n);
+            $localizableProvider.setDebugMode(window.ns === '');
+        }]);
+
+        // this is used for remoteActions config inside CardFramework
+        // this is duplicated in both ConsoleSidebar.page and CardLayoutComponent.component to facilitate
+        // independent testing of the left handside vs right handside of the console
+        var nsPrefixDotNotation = "{!nsPrefixDotNotation}";
+        console.log('nsPrefixDotNotation fetched from CardCanvasController: ' + nsPrefixDotNotation);
+        localStorage.setItem('nsPrefixDotNotation', nsPrefixDotNotation);
+        console.log('nsPrefixDotNotation value stored in localStorage: ' + localStorage.getItem('nsPrefixDotNotation'));
+
+
+        sideBarModule.run(["$sce","$rootScope","force","timeStampInSeconds",'interactionTracking', function($sce, $rootScope, force, timeStampInSeconds, interactionTracking){
+                console.log('inside run');
+
+                force.init({
+                        accessToken: '{!$Api.Session_ID}',
+                        useProxy: false
+                });
+
+                $rootScope.forcetkClient = new forcetk.Client();
+                $rootScope.forcetkClient.setSessionToken('{!$Api.Session_ID}');
+        }]);
+
+        sideBarModule.controller('accountCtrl', ['$scope', '$rootScope', 'timeStampInSeconds','dataService', 'pageService', '$localizable', function($scope, $rootScope, timeStampInSeconds, dataService, pageService, $localizable) {
+                
+                $scope.layoutName = pageService.params.layout ? pageService.params.layout : layoutName;
+                $scope.layoutId = pageService.params.layoutId;
+                $rootScope.isAdminUser = ("{!isAdminUser}" == "true");
+                $rootScope.isCommunityUser = ("{!InCommunity}" == "true");
+        
+
+                // this will prevent the sidebar in loading itself twice, reducing api calls by 50%
+                var eventHandler = function eventHandler(result) {
+                    // just do nothing so I do not refresh :)
+                };
+                sforce.console.onEnclosingTabRefresh(eventHandler);
+
+        }]);
+        
+         //override to remove trackVlocityInteraction action
+            sideBarModule.factory('interactionTracking', function() {
+                return {
+                    getDefaultTrackingData : function() {
+                        return {};
+                    },
+                    addInteraction: function(interaction) {
+                        return null;
+                    },
+                    enqueueInteractions : function(interactions) {
+                        return null;
+                    }
+                };
+            });
+     
+
+</script>
+</html>
+</apex:page>

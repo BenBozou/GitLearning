@@ -1,0 +1,177 @@
+<apex:component >
+<script>
+
+    angular
+        .module('myApp')
+        .service('cellcomFlyout', cellcomFlyout);
+
+    cellcomFlyout.$inject = ['$sldsPopover', '$rootScope', '$compile', '$log', '$window'];
+    function cellcomFlyout($sldsPopover, $rootScope, $compile, $log, $window) {
+        
+        var openSldsFlyouts = [];
+        $rootScope.hideFlyout = hideFlyout;
+
+        $rootScope.$on('vlocity.layouts.closeflyouts', function(event, data) {
+            openSldsFlyouts.forEach(function(flyout) {
+                flyout.hide();
+            });
+        });
+
+        $rootScope.$on('$includeContentLoaded', function(event, data) {
+            openSldsFlyouts.forEach(function(popover) {
+                popover.$applyPlacement();
+            });
+        });
+
+
+        return {
+            performFlyout: pre_performFlyout
+        };
+
+        function pre_performFlyout(cardIndex, $scope, data) {
+            performFlyout($scope, data.flyout.layout, data, cardIndex, data);
+        }
+
+        function performFlyout($scope, layoutName, data, cardIndex, parentObj) {
+            var isCardSelected = false;
+            isCardSelected = $('.cards-container').find('[data-card=' + cardIndex + ']').hasClass('selected');
+            //TBD: Need to be optimized
+            //If the the selected card is clicked again, close the flyout
+
+            if (isCardSelected) {
+                hideFlyout();
+                return false;
+            }
+            
+            $scope.newLayoutName = layoutName;
+            $scope.childData = data;
+            $scope.parentObj = parentObj;
+            
+            openFlyout($scope, cardIndex, parentObj);
+        };
+
+        function openFlyout($scope, cardIndex, parentObj) {
+            var cardsContainer = $('.cards-container'),
+                selectedCard = cardsContainer.find('[data-card=' + cardIndex + ']:not(".flyout [data-card]")'),
+                sectionCardsLength = cardsContainer.find('[data-card]:not(".flyout [data-card]")').length,
+                currentElementPos, flyoutEl, index;
+
+            hideFlyout(); //Close any open flyouts
+
+            $rootScope.selected = cardIndex.split('-')[1];
+
+            if (selectedCard.length === 0) {
+                //If selected card is not available, return.
+                return;
+            }
+
+            if (selectedCard.data('popover-flyout')) {
+                $scope.flyoutArrowLeftPos = parseInt((selectedCard.position().left + selectedCard.position().left + selectedCard.outerWidth()) / 2, 10);
+                openSldsFlyouts.push($sldsPopover(selectedCard, {
+                    /*template: '<vloc-layout layout-name="{{newLayoutName}}" records="childData" parent="parentObj" class="slds-m-around--small"></vloc-layout>',*/
+                    template: '<flyout><vloc-layout layout-name="{{newLayoutName}}" records="childData" parent="parentObj" class="slds-m-around--small"></vloc-layout></flyout>',
+                    show: true,
+                    nubbinDirection: 'top',
+                    container: cardsContainer,
+                    trigger: 'manual',
+                    scope: $scope
+                }));
+            } else if (selectedCard.data('embed-flyout') && ':parent' !== selectedCard.data('embed-flyout')) {
+            
+                flyoutEl = $compile('<embedded-flyout><vloc-layout layout-name="{{newLayoutName}}" records="childData" parent="parentObj"></vloc-layout></embedded-flyout>')($scope);
+                $(selectedCard.data('embed-flyout'), selectedCard).append(flyoutEl);
+            } else {
+            
+                //Calculate currentElementPos after existing flyouts are closed
+                currentElementPos = (selectedCard.length > 0) ? selectedCard.position().top : undefined,
+            
+                //Finding the mid position for selected card for arrow placement
+                $scope.flyoutArrowLeftPos = parseInt((selectedCard.position().left + selectedCard.position().left + selectedCard.outerWidth()) / 2, 10);
+
+                flyoutEl = $compile('<flyout><vloc-layout layout-name="{{newLayoutName}}" records="childData" parent="parentObj"></vloc-layout></flyout>')($scope);
+                index = Number(cardIndex.split('-')[1]);
+            
+                
+                console.log('while (index <= sectionCardsLength) { -- start');
+                while (index <= sectionCardsLength) {
+                    //Avoid selecting cards inside flyout
+                    var nextElem = cardsContainer.find('[data-card=card-' + (index + 1) + ']:not(".flyout [data-card]")');
+                    var nextElemTopPos = nextElem.length > 0 ? nextElem.position().top : 'empty';
+
+                console.log('while (index <= sectionCardsLength) { - run', nextElem, nextElemTopPos);
+                    
+                    //When the next elem top position is same as previous, it's considered same row
+                    if (nextElemTopPos - currentElementPos > 10 || nextElemTopPos === 'empty') {
+                        var target = cardsContainer.find('[data-card=card-' + index + ']:not(".flyout [data-card]")');
+                        console.log('target', target);
+                        if (selectedCard.data('embed-flyout') == ':parent') {
+                            $(flyoutEl).insertAfter($(target).parent());
+                        } else {
+                            $(flyoutEl).insertAfter(target);
+                        }
+                        positionFlyoutToViewport(selectedCard);
+                        break;
+                    }else {
+                        //Increment the index when nextElem is in same row
+                        index = index + 1;
+                    }
+                }
+            }
+        }
+        /**
+        * Positions the Flyout into the viewport
+        * @param  {*} card - jquery element
+        */
+        function positionFlyoutToViewport(card) {
+            
+            var cardTop, flyoutTop, flyoutHeight, windowHeight, newScrollTop;
+            var scrollSpeed = 100; //In milliseconds
+            var marginForFlyout = 15; //15px padding between card and flyout
+            var jqFlyout = $('.flyout');
+
+            /**
+            * Multiple use cases are handled to ensure the Flyout is best fitted within the viewport in the given
+            * form factor. Usecases handled are listed below:
+            *
+            * 1. Flyout and Card can fit into window's height.
+            *    -- Display's both.
+            * 2. Flyout and Card can not fit into window but Flyout alone can fit.
+            *    -- Displays full Flyout and the partial card in remaining area.
+            * 3. Flyout can not fit into window.
+            *    -- Display top of the Flyout
+            */
+
+            if (card && card.length > 0 && jqFlyout.length > 0) {
+                try {
+                    cardTop = card.offset().top;
+                    flyoutTop = jqFlyout.offset().top;
+                    windowHeight = $window.innerHeight;
+                    flyoutHeight = jqFlyout.outerHeight();
+
+                    if ((flyoutHeight + card.outerHeight() + marginForFlyout) <= windowHeight) {
+                        newScrollTop = cardTop - 5; //Adjustments for the outline and border
+                    } else if (flyoutHeight < windowHeight) {
+                        newScrollTop = flyoutTop - (windowHeight - flyoutHeight);
+                    } else {
+                        newScrollTop =  flyoutTop;
+                    }
+
+                    $('html, body').animate({scrollTop : newScrollTop}, scrollSpeed);
+                    
+                } catch (e) {
+                    $log.log('Error occured while scrolling the flyout to viewport', e.message);
+                }
+            } else {
+                $log.log('Failed to scroll the Flyout to viewport - Card/Flyout element not available');
+            }
+        }
+        function hideFlyout(e) {
+            $rootScope.selected = 'none';
+            $rootScope.$broadcast('vlocity.layouts.closeflyouts');
+            $('.cards-container .flyout').addClass('hide').remove();
+        };
+    };
+
+
+</script>
+</apex:component>

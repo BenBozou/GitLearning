@@ -1,0 +1,20 @@
+<apex:page >
+  <apex:iframe src="https://invoice.cellcom.co.il/InvoiceOnline?id=51EA1E37-0292-2F87-5B10-335E9A22B900" scrolling="true" id="theIframe"/>
+    
+  <apex:outputtext value="Frame Separator" />
+  
+  <apex:iframe src="https://netbill-test/Invoices_Show.aspx?CompanyCode=NVB&DocumentCode=SINV110&DocumentNumber=76297747" scrolling="true" id="theIframe2"/>
+    
+  <apex:outputtext value="Frame Separator" />
+    
+  <apex:iframe src="http://v-bifinpano:1234/panorama/bSearch2/bSearch2_Customer.asp?orgLevel=K&orgId=621414" scrolling="true" id="theIframe3"/>
+
+  <apex:outputtext value="Frame Separator" />
+  
+  <apex:iframe src="http://bifinsql/ReportServer/Pages/ReportViewer.aspx?%2fReports_for_Analiza%2fINVOICE_REPORT&rs:Command=Render&rc:linktarget=_self&ind=K&ORG3=621414" scrolling="true" id="theIframe4"/>
+  
+  <apex:outputtext value="Frame Separator" />
+  
+  <apex:iframe src="https://lanbillqa.corp.cellcom.co.il/Home/Index?file=/PdfHandler.ashx/D03497D7-CABF-1FAF-5B10-788F9A22B901" scrolling="true" id="theIframe5"/>
+
+</apex:page>

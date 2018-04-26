@@ -1,0 +1,8 @@
+<apex:page standardController="Opportunity" cache="false" extensions="vlocity_cmt.VFPageControllerBase" showHeader="false" sidebar="false" docType="html-5.0">
+ <apex:stylesheet value="{!URLFOR($Resource.vlocity_icons, '/css/vlocity-icons.css')}"/>
+          <vlocity_cmt:ActionComponent standardController="{!stdController}"
+                                                              objType="Opportunity"
+                                                              style="Horizontal"
+                                                              linkTypes="ConsoleBar"/> 
+
+</apex:page>

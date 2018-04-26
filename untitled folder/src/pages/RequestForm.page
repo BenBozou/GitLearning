@@ -1,0 +1,452 @@
+<apex:page standardController="Request__c" extensions="RequestFormController,LinkEnvSupport" docType="html-5.0" sidebar="true" showHeader="true">
+     <apex:includeScript value="{!URLFOR($Resource.jquery, 'jquery.min.js')}"/>
+    <apex:includeScript value="/support/console/38.0/integration.js"/>
+    <apex:includeScript value="{!URLFOR($Resource.console_Resources, '/JS/cardLink.js')}"/>
+    <style>
+        .lookupInput .slds-input {
+        width: 90% !important;
+        }
+        .lookupInput a.slds-input {
+        width: 10% !important;
+        }
+        .msgIcon {
+            display: none!important
+        }
+        .customMessage * {
+            color: #fff!important
+        }
+        .customMessage {
+            margin: 5px 0!important;
+            max-width: 1280px; 
+            opacity: 1!important;
+            width: 100%;
+            font-size: 12px;
+            border: 0px;
+            padding-left: 10px;
+        }
+        .message {
+            opacity: .1
+        }
+        span.dateInput span.dateFormat{
+            display:none;
+        }
+        select{
+            background-color: rgb(255, 255, 255);
+            color: rgb(22, 50, 92);
+            width: 100%;
+            display: inline-block;
+            line-height: 1.875rem;
+            min-height: calc(1.875rem + 2px);
+            border-width: 1px;
+            border-style: solid;
+            border-color: rgb(216, 221, 230);
+            border-image: initial;
+            border-radius: 0.25rem;
+            transition: border 0.1s linear, background-color 0.1s linear;
+            padding: 0px 1rem 0px 0.75rem;
+        }
+        html {
+            border: solid 1px transparent;
+            width: 100%;
+        }
+    </style>
+    <apex:stylesheet value="{!URLFOR($Resource.SLDS221, 'assets/styles/salesforce-lightning-design-system-vf.min.css')}" /> 
+    <div class="cellcom" id="requestformId" dir="rtl">
+        <apex:form id="formId">
+            <div align="right"><apex:pagemessages /></div>
+            <div class="slds-text-heading--large slds-grid slds-grid--align-center slds-p-top--medium slds-p-bottom--medium">{!$Label.RequestCreation}</div>
+            <div class="slds-grid slds-wrap slds-grid--pull-padded">
+                <apex:outputPanel rendered="{!request.OpportunityId__c != null}" styleClass="slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--1-of-2">
+                    <label class="slds-form-element__label slds-p-top--x-small" for="select-01">{!$ObjectType.Request__c.fields.OpportunityId__c.label}</label>
+                    <div class="slds-form-element__control">
+                        <apex:inputField value="{!request.OpportunityId__c}" styleClass="slds-input" rendered="{!step = '1'}"/>
+                        <apex:outputPanel styleClass="slds-input" rendered="{!step != '1'}">
+                            <apex:outputField value="{!request.OpportunityId__c}"/>
+                        </apex:outputPanel>
+                    </div>
+                </apex:outputPanel>
+                <apex:outputPanel styleClass="slds-form-element slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--1-of-2" rendered="{!request.OpportunityId__c != null}">
+                    <label class="slds-form-element__label slds-p-top--x-small" for="select-01">{!$ObjectType.Request__c.fields.Product__c.label}</label>
+                    <div class="slds-form-element__control">
+                        <apex:selectList size="1" value="{!request.ProductLineItemId__c}" styleClass="slds-select" rendered="{!productsList.size > 0 && step = '1'}">
+                            <apex:selectOptions value="{!productsList}"/>
+                            <apex:actionSupport action="{!updateProductLineItemId}" event="onchange" reRender="productLineItemId" />
+                        </apex:selectList>
+                        <apex:outputPanel styleClass="slds-input" rendered="{!productsList.size = 0 || step != '1'}">
+                            <apex:outputLink value="/{!request.ProductLineItemId__c}" target="_blank" id="theLink">{!request.Product__c}</apex:outputLink>
+                        </apex:outputPanel>
+                    </div>
+                </apex:outputPanel>
+                <apex:outputPanel rendered="{!request.CaseId__c != null}" styleClass="slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--1-of-2">
+                    <label class="slds-form-element__label slds-p-top--x-small" for="select-01">{!$ObjectType.Request__c.fields.CaseId__c.label}</label>
+                    <div class="slds-form-element__control">
+                        <apex:inputField value="{!request.CaseId__c}" styleClass="slds-input" rendered="{!step = '1'}"/>
+                        <apex:outputPanel styleClass="slds-input" rendered="{!step != '1'}">
+                            <apex:outputField value="{!request.CaseId__c}"/>
+                        </apex:outputPanel>
+                    </div>
+                </apex:outputPanel>
+                <apex:inputField value="{!request.Source__c}" style="display:none;"/>
+                <div class="slds-form-element slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--1-of-2">
+                    <label class="slds-form-element__label slds-p-top--x-small" for="select-01">{!$ObjectType.Request__c.fields.Category__c.label}</label>
+                    <div class="slds-form-element__control">
+                        <apex:inputField value="{!request.Category__c}" styleClass="slds-select" rendered="{!step = '1'}"/>
+                        <apex:outputPanel styleClass="slds-input" rendered="{!step != '1'}">
+                            <apex:outputField value="{!request.Category__c}"/>
+                        </apex:outputPanel>
+                    </div>
+                </div>
+                
+                <apex:outputPanel id="productLineItemId" styleClass="slds-form-element slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--1-of-2" rendered="{!request.ProductLineItemId__c != null}">
+                    <label class="slds-form-element__label slds-p-top--x-small" for="select-01">{!$ObjectType.Request__c.fields.OppProductId__c.label}</label>
+                    <div class="slds-form-element__control">
+                        <apex:outputPanel styleClass="slds-input">
+                            <apex:outputField value="{!request.OppProductId__c}"/>
+                        </apex:outputPanel>
+                    </div>
+                </apex:outputPanel>
+            </div>
+            
+            <!----------------------------------------------------------------------------------------------------------------------->
+            <!----------------------------------------------------------------------------------------------------------------------->
+            <!-------------------------------------------------- OPERATIVE SECTION -------------------------------------------------->
+            <!----------------------------------------------------------------------------------------------------------------------->
+            <!----------------------------------------------------------------------------------------------------------------------->
+            
+            <apex:outputPanel id="operativeSec"  rendered="{!request.Category__c = 'Operative' && step != '1' && step != '100'}">
+                <apex:outputPanel layout="block" id="typeSec" style="padding-top:30px;" styleClass="slds-grid slds-wrap slds-grid--pull-padded" rendered="{!step = '2' || step = '3' || step = '3.5' || step = '4'}">
+                    <apex:inputField value="{!request.Source__c}" style="display:none;"/>
+                    <div class="slds-form-element slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--1-of-2">
+                        <label class="slds-form-element__label slds-p-top--x-small" for="select-01">{!$ObjectType.Request__c.fields.Type__c.label}</label>
+                        <div class="slds-form-element__control">
+                            <apex:inputField value="{!request.Type__c}" styleClass="slds-select" rendered="{!step = '2'}"/>
+                            <apex:outputPanel styleClass="slds-input" rendered="{!step != '2'}">
+                                <apex:outputField value="{!request.Type__c}"/>
+                            </apex:outputPanel>
+                        </div>
+                    </div>
+                </apex:outputPanel>
+                
+                <apex:outputPanel layout="block" id="controllingSec" style="padding-top:30px;" styleClass="slds-grid slds-wrap slds-grid--pull-padded" rendered="{!step = '3' || step = '3.5' || step = '4'}">
+                
+                    <apex:repeat value="{!controllingFieldsList}" var="controllingLine">
+                        <apex:outputPanel styleclass="slds-form-element slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--1-of-2">
+                            <label class="slds-form-element__label slds-p-top--x-small" for="select-01">{!controllingLine.rConfig.FieldLabel__c}</label>
+                            <div class="slds-form-element__control">
+                                <apex:outputText styleClass="slds-input controloutput{!controllingLine.rowIndex}" value="{!controllingLine.fieldValueLabel}" rendered="{!controllingLine.rConfig.FieldType__c == 'Output' || step = '3.5' || step = '4'}"/>
+                                <apex:selectList size="1" value="{!controllingLine.fieldValue}" styleClass="slds-select controlpicklist{!controllingLine.rowIndex}" rendered="{!controllingLine.rConfig.FieldType__c == 'Picklist' && step = '3'}" onchange="setPicklistsVals('{!controllingLine.rowIndex}');"><!--disabled="{!controllingLine.picklistValues.size = 0}"-->
+                                    <apex:selectOptions value="{!controllingLine.picklistValues}"/>
+                                </apex:selectList>
+                            </div>
+                        </apex:outputPanel>
+                    </apex:repeat>
+                </apex:outputPanel>
+                <script>
+                    //no need to init the first picklist field (wither its the first, second or the third field)
+                    //check if the first and second fields are picklists, if yes then need to init the second field
+                    if($('.controlpicklist1').length == 1 && $('.controlpicklist2').length == 1){
+                        fillPicklistValues(1,'{!cont1Val}','');
+                        $('.controlpicklist2').val('{!cont2Val}');
+                    }
+                    //check if the first or second fields are picklists and the third one is a picklist, if yes then need to init the third field
+                    if(($('.controlpicklist1').length == 1 || $('.controlpicklist2').length == 1) && $('.controlpicklist3').length == 1){
+                        console.log('$$$$ 1 -- {!cont1Val}');
+                        console.log('$$$$ 1 -- {!cont2Val}');
+                        console.log('$$$$ 1 -- {!cont3Val}');
+                        fillPicklistValues(2,'{!cont1Val}','{!cont2Val}');
+                        $('.controlpicklist3').val('{!cont3Val}');
+                    }
+                </script>
+                
+                
+                <apex:outputPanel layout="block" id="fieldsSec" style="padding-top:30px;" styleClass="slds-grid slds-wrap slds-grid--pull-padded" rendered="{!(step = '3.5' || step = '4') && !isURL}">
+                    <apex:repeat value="{!requestDetailsWrapList}" var="fieldLine">
+                        <apex:outputPanel styleclass="slds-form-element slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--1-of-2">
+                            <label class="slds-form-element__label slds-p-top--x-small" for="select-01">
+                                <apex:outputPanel rendered="{!fieldLine.rdConfig.IsMandatory__c}"><abbr class="slds-required" title="required">*</abbr></apex:outputPanel>{!fieldLine.rDetails.FieldLabel__c}
+                            </label>
+                            <div class="slds-form-element__control">
+                                <apex:inputText styleClass="slds-input" value="{!fieldLine.rDetails.FieldValue__c}" rendered="{!fieldLine.rdConfig.FieldType__c = 'Text Short' || fieldLine.rdConfig.FieldType__c = 'Currency' || fieldLine.rdConfig.FieldType__c = 'Number'}" required="{!fieldLine.rdConfig.IsMandatory__c}"/>
+                                <apex:inputTextarea styleClass="slds-input" value="{!fieldLine.rDetails.FieldValue__c}" rendered="{!fieldLine.rdConfig.FieldType__c = 'Text long'}" required="{!fieldLine.rdConfig.IsMandatory__c}"/>
+                                <apex:inputField showDatePicker="true" styleClass="slds-input" value="{!fieldLine.rDetails.DateInput__c}" rendered="{!fieldLine.rdConfig.FieldType__c = 'Date'}" required="{!fieldLine.rdConfig.IsMandatory__c}"/>
+                                <apex:selectList size="1" value="{!fieldLine.rDetails.FieldValue__c}" styleClass="slds-select" rendered="{!fieldLine.rdConfig.FieldType__c = 'Picklist'}" required="{!fieldLine.rdConfig.IsMandatory__c}">
+                                    <apex:selectOptions value="{!fieldLine.picklistValues}"/>
+                                </apex:selectList>
+                            </div>
+                        </apex:outputPanel>
+                    </apex:repeat>
+                </apex:outputPanel>
+                
+                <apex:outputPanel layout="block" id="URLBanSec" style="padding-top:30px;" styleClass="slds-grid slds-wrap slds-grid--pull-padded" rendered="{!(step = '3.5' || step = '4') && isURL}">
+                	<apex:outputPanel styleclass="slds-form-element slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--1-of-2">
+                		<label class="slds-form-element__label slds-p-top--x-small" for="select-01">{!$Label.AccountBAN}</label>
+                		<div class="slds-form-element__control">
+                			<apex:inputText styleClass="slds-input banClass" value="{!urlBan}" rendered="{!step = '3.5'}"/>
+                			<apex:outputText styleClass="slds-input" value="{!urlBan}" rendered="{!step = '4'}"/>
+                		</div>
+                	</apex:outputPanel>
+                </apex:outputPanel>
+                
+                <apex:outputPanel layout="block" id="URLSec" style="padding-top:30px;" styleClass="slds-grid slds-wrap slds-grid--pull-padded" rendered="{!step = '4' && isURL}">
+                    <apex:outputPanel styleclass="slds-form-element slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--1-of-1">
+                        <label class="slds-form-element__label slds-p-top--x-small" for="select-01">{!requestDetailsWrapList[0].rDetails.FieldLabel__c}</label>
+                        <div class="slds-form-element__control">
+                            <apex:inputText styleClass="urlIn" value="{!requestDetailsWrapList[0].rDetails.FieldValue__c}" style="display:none;"/>
+                            <apex:outputText styleClass="slds-input urlOut" value="{!requestDetailsWrapList[0].rDetails.FieldValue__c}"/>
+                        </div>
+                    </apex:outputPanel>
+                </apex:outputPanel>
+            </apex:outputPanel>
+            
+            
+            <!----------------------------------------------------------------------------------------------------------------------->
+            <!----------------------------------------------------------------------------------------------------------------------->
+            <!------------------------------------------------- COMMERCIAL SECTION -------------------------------------------------->
+            <!----------------------------------------------------------------------------------------------------------------------->
+            <!----------------------------------------------------------------------------------------------------------------------->
+            
+            <apex:outputPanel layout="block" id="commercialSec" rendered="{!request.Category__c = 'Commercial' && step = '100'}">
+                <apex:repeat value="{!childRequestsList}" var="req">
+                    <!--<h3 class="slds-section-title--divider">Request {!req.Order__c}</h3>-->
+                    <apex:outputPanel layout="block" style="padding-top:30px;" styleClass="slds-grid slds-wrap slds-grid--pull-padded">
+                        <apex:outputPanel styleclass="slds-form-element slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--1-of-2">
+                            <label class="slds-form-element__label slds-p-top--x-small">{!$ObjectType.Request__c.fields.Approver__c.label}</label>
+                            <div class="slds-form-element__control">
+                                <apex:inputField styleClass="slds-input" value="{!req.Approver__c}" required="true"/>
+                            </div>
+                        </apex:outputPanel>
+                        <apex:outputPanel styleclass="slds-form-element slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--1-of-2">
+                            <label class="slds-form-element__label slds-p-top--x-small">{!$ObjectType.Request__c.fields.ApprovalType__c.label}</label>
+                            <div class="slds-form-element__control">
+                                <apex:inputField styleClass="apptypeClass{!req.Order__c} slds-input" value="{!req.ApprovalType__c}" required="true"/>
+                            </div>
+                        </apex:outputPanel>
+                        <!--
+                        <apex:outputPanel styleclass="slds-form-element slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--1-of-2">
+                            <label class="slds-form-element__label slds-p-top--x-small">{!$ObjectType.Request__c.fields.ProductStatus__c.label}</label>
+                            <div class="slds-form-element__control">
+                                <apex:inputField styleClass="slds-input" value="{!req.ProductStatus__c}"/>
+                            </div>
+                        </apex:outputPanel>
+                        -->
+                        <apex:outputPanel styleclass="slds-form-element slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--1-of-2">
+                            <label class="slds-form-element__label slds-p-top--x-small">{!$ObjectType.Request__c.fields.Note__c.label}</label>
+                            <div class="slds-form-element__control">
+                                <apex:inputField styleClass="slds-input" value="{!req.Note__c}"/>
+                            </div>
+                        </apex:outputPanel>
+                    </apex:outputPanel>
+                    <div class="slds-grid slds-grid--align-center slds-p-top--medium">
+                        <apex:commandButton styleClass="slds-button" style="padding-left:10px;padding-right:10px;" onclick="deleteRequest({!req.Order__c});return false;" value="{!$Label.Delete}" immediate="true"/>
+                    </div>
+                </apex:repeat>
+            </apex:outputPanel>
+            
+            
+            <div class="slds-grid slds-grid--align-center slds-p-top--medium" id="buttonsDiv">
+                <apex:commandButton styleClass="slds-button" style="padding-left:10px;padding-right:10px;" action="{!cancel}" value="{!$Label.Cancel}" rendered="true" immediate="true" html-formnovalidate="formnovalidate"/>
+                <apex:commandButton styleClass="slds-button" style="padding-left:10px;padding-right:10px;" action="{!startFlowBasedOnCategory}" value="{!$Label.Next}" rendered="{!step = '1'}" reRender="requestformId,formId,typeSec" oncomplete="overridePageMessages();"/>
+                <apex:commandButton styleClass="slds-button" style="padding-left:10px;padding-right:10px;" action="{!retreiveControllingMetadata}" value="{!$Label.Next}" rendered="{!step = '2'}" reRender="requestformId,formId,typeSec,controllingSec" oncomplete="overridePageMessages();window.picklistsJSON='{!JSENCODE(dependenciesJSON)}';initPIcklistVals();"/>
+                <apex:commandButton styleClass="slds-button" style="padding-left:10px;padding-right:10px;" value="{!$Label.Next}" rendered="{!step = '3'}" onclick="getfields($('.controlpicklist1').val(),$('.controlpicklist2').val(),$('.controlpicklist3').val());return false;" immediate="true"/><!-- oncomplete="overridePageMessages();" reRender="requestformId,formId,fieldsSec" action="{!retreiveFieldsMetadata}"  ,document.getElementById('{!$Component.ownerInput}_lkid').value-->
+                
+                <apex:commandButton styleClass="slds-button" style="padding-left:10px;padding-right:10px;" value="{!$Label.Next}" rendered="{!step = '3.5'}" onclick="getBaseURL($('.banClass').val());return false;" immediate="true"/>
+                
+                <!--<apex:commandButton styleClass="slds-button" style="padding-left:10px;padding-right:10px;" action="{!back}" value="{!$Label.Back}" rendered="{!step = '2' || step = '3'}" reRender="requestformId,formId" immediate="true" html-formnovalidate="formnovalidate"/>-->
+                <apex:commandButton styleClass="slds-button" style="padding-left:10px;padding-right:10px;" onclick="back();return false;" value="{!$Label.Back}" rendered="{!step != '1'}" immediate="true"/>
+                <apex:commandButton styleClass="slds-button" style="padding-left:10px;padding-right:10px;" value="{!$Label.Add}" action="{!addRequest}" rendered="{!step = '100'}" reRender="formId,commercialSec,buttonsDiv" oncomplete="overridePageMessages();"/>
+                <apex:commandButton styleClass="slds-button" style="padding-left:10px;padding-right:10px;" action="{!createRequest}" value="{!$Label.Create}" rendered="{!step = '4' && !isURL}" reRender="formId,operativeSec" oncomplete="overridePageMessages();OnRequestSaveComplete('{!request.Id}','{!request.OpportunityId__c}','{!request.CaseId__c}','','great');" immediate="false"/>
+                <apex:commandButton styleClass="slds-button" style="padding-left:10px;padding-right:10px;" action="{!createRequest}" value="{!$Label.CreateGo}" rendered="{!step = '4' && isURL}" oncomplete="overridePageMessages();OnRequestSaveComplete('{!request.Id}','{!request.OpportunityId__c}','{!request.CaseId__c}',$('.urlOut').html(),'greatgo');"/><!--alert('{!request.Id}');-->
+                <apex:commandButton styleClass="slds-button" style="padding-left:10px;padding-right:10px;" action="{!createCommercialRequest}" value="{!$Label.Create}" rendered="{!step="100" && childRequestsList.size > 0}" reRender="formId" immediate="false" oncomplete="overridePageMessages();OnRequestSaveComplete('{!request.Id}','{!request.OpportunityId__c}','{!request.CaseId__c}','','great');"/>
+            </div>
+            <apex:actionFunction name="back" action="{!back}" oncomplete="console.log('{!step}');" immediate="true" reRender="requestformId,formId"/>
+            <apex:actionFunction name="getfields" action="{!retreiveFieldsMetadata}" oncomplete="overridePageMessages();/*getNewURL();*/" immediate="true" reRender="requestformId,formId,typeSec,controllingSec,fieldsSec,URLSec">
+                <apex:param name="cont1Val" assignTo="{!cont1Val}" value=""/>
+                <apex:param name="cont2Val" assignTo="{!cont2Val}" value=""/>
+                <apex:param name="cont3Val" assignTo="{!cont3Val}" value=""/>
+                <!--<apex:param name="ownerVal" assignTo="{!request.OwnerId}" value=""/>-->
+            </apex:actionFunction>
+            <apex:actionFunction name="getBaseURL" action="{!buildBaseURL}" oncomplete="overridePageMessages();getNewURL();" immediate="true" reRender="requestformId,formId,typeSec,controllingSec,fieldsSec,URLSec">
+                <apex:param name="urlBanNum" assignTo="{!urlBan}" value=""/>
+            </apex:actionFunction>
+            <apex:actionFunction name="deleteRequest" action="{!deleteRequest}" immediate="true" reRender="formId,commercialSec,buttonsDiv">
+                <apex:param name="reqIndex" assignTo="{!requestIndexToDelete}" value=""/>
+            </apex:actionFunction>
+        </apex:form>
+    </div>
+    <script>
+        $(document).ready(function(){
+            window.picklistsJSON = '';
+            sforce.console.setTabTitle('{!$Label.RequestCreation}');
+            window.currEnvironmentAllLinks = {!urlLinkList};
+            //console.log('$$$$$ ' + getUrl('AMDOCS/'));
+        });
+        
+        function getNewURL(){
+            console.log($('.urlOut').html());
+            var newURL = getUrl($('.urlOut').html());
+            console.log('>>> ' + newURL);
+            $('.urlOut').html(newURL);
+            $('.urlIn').val(newURL);
+        }
+        
+        function OnRequestSaveComplete(reqId,oppId,caseId,urlOut,method){
+            
+            console.log('>>> reqId: ' + reqId);
+            console.log('>>> oppId: ' + oppId);
+            console.log('>>> caseId: ' + caseId);
+            console.log('>>> urlOut: ' + urlOut);
+            var returnObjectId;
+            
+            if(!reqId)
+            	return;
+            
+            if(method == 'greatgo')
+            	window.open(urlOut,'_blank');
+            
+            if(sforce && sforce.console.isInConsole()){
+            	//window.open('/' + reqId + '?isdtp=vw','_self');
+            	//refresh opp/case tab
+            	sforce.console.getEnclosingPrimaryTabId(refreshTab);
+            	
+            	sforce.console.getEnclosingTabId(closeSubtab);
+            }
+            else{
+                if(oppId){
+                    returnObjectId = oppId;
+                }
+                else if(caseId){
+                    returnObjectId = caseId;
+                }
+                else{
+                    returnObjectId = reqId;
+                }
+                
+                if( (typeof sforce != 'undefined') && sforce && (!!sforce.one) ) {
+                    sforce.one.navigateToURL('/' + returnObjectId, true);
+                }
+                else{
+            	    window.open('/' + returnObjectId,'_self');
+                }
+            }
+        }
+        
+        var closeSubtab = function closeSubtab(result) {
+            //Now that we have the tab ID, we can close it
+            var tabId = result.id;
+            sforce.console.closeTab(tabId);
+        };
+        
+        var refreshTab = function refreshTab(result) {
+	        sforce.console.refreshPrimaryTabById(result.id, true);
+        };
+        
+        function setPicklistsVals(index){
+            console.log('index: ' + index);
+            console.log('selected value: ' + $('.controlpicklist2').val());
+            var control1;
+            var control2;
+            //first picklist changed
+            if(index == 1){
+                control1 = $('.controlpicklist1').val();
+                //check the second field if exists, if its a picklist
+                
+                //handle the second field, check if exists and if its a picklist
+                console.log('second field exists? ' + $('.controlpicklist2').length);
+                if($('.controlpicklist2').length == 1){
+                    //second picklist exists
+                    $('.controlpicklist2').val('');
+                    $('.controlpicklist2').change();
+                    $('.controlpicklist2').empty();
+                    control2 = '';
+                    if(control1 != ''){
+                        fillPicklistValues(1,control1,'');
+                    }
+                }
+                else{
+                    //the second field is output, get its value
+                    control2 = $('.controloutput2').text();
+                }
+                
+                //handle the third field
+                //console.log('second field exists? ' + $('.controlpicklist3').length);
+                if($('.controlpicklist3').length == 1){
+                    //third picklist exists
+                    $('.controlpicklist3').val('');
+                    $('.controlpicklist3').change();
+                    $('.controlpicklist3').empty();
+                    if($('.controlpicklist2').length == 0){
+                        //if the second field is output then get relevant values
+                        fillPicklistValues(1,control1,control2);
+                    }
+                }
+            }
+            //second picklist changed
+            else if(index == 2){
+                if($('.controlpicklist1').length == 1)
+                    control1 = $('.controlpicklist1').val();
+                else
+                    control1 = $('.controloutput1').text();
+                    
+                control2 = $('.controlpicklist2').val();
+                
+                //handle the third field
+                //console.log('third field exists? ' + $('.controlpicklist3').length);
+                if($('.controlpicklist3').length == 1){
+                    //third picklist exists
+                    $('.controlpicklist3').val('');
+                    $('.controlpicklist3').change();
+                    $('.controlpicklist3').empty();
+                    if(control2 != ''){
+                         fillPicklistValues(2,control1,control2);
+                    }
+                }
+            }
+        }
+        
+        function fillPicklistValues(index,control1,control2){
+            var htmlOptions = '<option value="" selected="selected"></option>';
+            var json = window.picklistsJSON;
+            var firstLevelMap = JSON.parse(json);
+            var secondLevelMap = firstLevelMap[control1];
+            if(index == 1){
+                for(var k in secondLevelMap){
+                    htmlOptions += '<option value="' + k + '">' + k + '</option>';
+                }
+                //console.log('htmlOptions: ' + htmlOptions);
+                $('.controlpicklist2').append(htmlOptions);
+            }   
+            else if(index == 2){
+                var thirdLevelList = secondLevelMap[control2];
+                console.log('>>> thirdLevelList: ', thirdLevelList);
+                if (thirdLevelList == undefined) return;
+                for(var k=0; k<thirdLevelList.length; k++){
+                    htmlOptions += '<option value="' + thirdLevelList[k] + '">' + thirdLevelList[k] + '</option>';
+                    console.log('>>> third level value: ' + thirdLevelList[k]);
+                }
+                //console.log('htmlOptions: ' + htmlOptions);
+                $('.controlpicklist3').append(htmlOptions);
+            }
+        }
+        
+        function overridePageMessages(){  
+            var textureEffect = '';
+            textureEffect = 'slds-theme--alert-texture';
+            
+            $('.warningM3').addClass('slds-notify slds-notify--toast slds-theme--warning customMessage '+textureEffect);          
+            $('.confirmM3').addClass('slds-notify slds-notify--alert slds-theme--success  customMessage '+textureEffect);    
+            $('.errorM3').addClass('slds-notify slds-notify--alert slds-theme--error customMessage '+textureEffect);                  
+            $('.infoM3').addClass('slds-notify slds-notify--toast customMessage '+textureEffect);    
+                             
+            $('.errorM3').removeClass('errorM3'); 
+            $('.confirmM3').removeClass('confirmM3'); 
+            $('.infoM3').removeClass('infoM3');   
+            $('.warningM3').removeClass('warningM3');
+            
+            //$('.messageText').attr('align', 'right');
+            $(".messageTable td").each(function () {
+                $(this).css('text-align', 'right');
+            })
+            
+        }
+    </script>
+</apex:page>

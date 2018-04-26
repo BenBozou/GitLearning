@@ -1,0 +1,210 @@
+<apex:component controller="RequestViewEditComponentController" allowDML="true">
+    <apex:attribute name="request" type="Request__c" required="true" description="request" assignTo="{!req}"/>
+    <apex:attribute name="mode" type="String" required="true" description="view or edit mode" assignTo="{!pageMode}"/>
+    
+    <style>
+        .lookupInput .slds-input {
+        width: 90% !important;
+        }
+        .lookupInput a.slds-input {
+        width: 10% !important;
+        }
+        .selectStyle select{
+            background-color: #fff;
+            color: #16325c;
+            border: 1px solid #d8dde6;
+            border-radius: .25rem;
+            width: 100%;
+            transition: border .1s linear,background-color .1s linear;
+            height: calc(1.875rem + (1px * 2));
+        }
+    </style>
+    <apex:includeScript value="/support/console/38.0/integration.js"/>
+    <apex:stylesheet value="{!URLFOR($Resource.SLDS221, 'assets/styles/salesforce-lightning-design-system-vf.min.css')}" /> 
+    <div class="cellcom" id="requestformId" dir="rtl">
+        <apex:form id="formId">
+            
+            <div class="slds-text-heading--large slds-grid slds-grid--align-center slds-p-top--medium slds-p-bottom--medium">{!$Label.RequestDetails} - {!request.Name}</div>
+            <div class="slds-grid slds-wrap slds-grid--pull-padded selectStyle">
+                <apex:repeat value="{!$ObjectType.Request__c.FieldSets.RequestHeader}" var="field">
+                    <apex:outputPanel styleClass=" slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--1-of-2" rendered="{!(field != 'ProductLineItemId__c' && field != 'CaseId__c' && field != 'OppProductId__c' && field != 'Product__c') || (field == 'CaseId__c' && req[field] != null) || ((field == 'OppProductId__c' || field == 'Product__c') && request.CaseId__c == null)}">
+                        <label class="slds-form-element__label slds-p-top--x-small" for="select-01">{!field.Label}</label>
+                        <apex:outputPanel styleClass="slds-input">
+                            <apex:outputField value="{!req[field]}" rendered="{!field != 'Product__c'}"/>
+                            <apex:outputLink value="#" onclick="openProductURL('{!request.ProductLineItemId__c}');" id="theLink" rendered="{!field == 'Product__c'}">{!request.Product__c}</apex:outputLink>
+                        </apex:outputPanel>
+                    </apex:outputPanel>
+                </apex:repeat>
+            </div>
+            
+            <!----------------------------------------------------------------------------------------------------------------------->
+            <!----------------------------------------------------------------------------------------------------------------------->
+            <!-------------------------------------------------- OPERATIVE SECTION -------------------------------------------------->
+            <!----------------------------------------------------------------------------------------------------------------------->
+            <!----------------------------------------------------------------------------------------------------------------------->
+            
+            <apex:outputPanel id="operativeSec"  rendered="{!request.Category__c = 'Operative'}">
+                <apex:outputPanel layout="block" id="controllingSec" style="padding-top:30px;" styleClass="slds-grid slds-wrap slds-grid--pull-padded">
+                    <apex:outputPanel styleclass="slds-form-element slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--1-of-2" rendered="{!request.FieldLabel1__c != null}">
+                        <label class="slds-form-element__label slds-p-top--x-small" for="select-01">{!request.FieldLabel1__c}</label>
+                        <div class="slds-form-element__control"><apex:outputText styleClass="slds-input" value="{!request.FieldValue1__c}"/></div>
+                    </apex:outputPanel>
+                    <apex:outputPanel styleclass="slds-form-element slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--1-of-2" rendered="{!request.FieldLabel2__c != null}">
+                        <label class="slds-form-element__label slds-p-top--x-small" for="select-01">{!request.FieldLabel2__c}</label>
+                        <div class="slds-form-element__control"><apex:outputText styleClass="slds-input" value="{!request.FieldValue2__c}"/></div>
+                    </apex:outputPanel>
+                    <apex:outputPanel styleclass="slds-form-element slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--1-of-2" rendered="{!request.FieldLabel3__c != null}">
+                        <label class="slds-form-element__label slds-p-top--x-small" for="select-01">{!request.FieldLabel3__c}</label>
+                        <div class="slds-form-element__control"><apex:outputText styleClass="slds-input" value="{!request.FieldValue3__c}"/></div>
+                    </apex:outputPanel>
+                    <div class="slds-form-element slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--1-of-2">
+                        <label class="slds-form-element__label slds-p-top--x-small" for="select-01">{!$ObjectType.Request__c.fields.OwnerId.label}</label>
+                        <apex:inputField value="{!request.OwnerId}" styleClass="slds-input" rendered="{!mode = 'edit'}"/>
+                        <apex:outputPanel styleClass="slds-input" rendered="{!mode = 'view'}">
+                            <apex:outputField value="{!request.OwnerId}"/>
+                        </apex:outputPanel>
+                    </div>
+                    <div class="slds-form-element slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--1-of-2">
+                        <label class="slds-form-element__label slds-p-top--x-small" for="select-01">{!$ObjectType.Request__c.fields.DueDate__c.label}</label>
+                        <apex:outputPanel styleClass="slds-input">
+                            <apex:outputField value="{!request.DueDate__c}"/>
+                        </apex:outputPanel>
+                    </div>
+                    <div class="slds-form-element slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--1-of-2">
+                        <label class="slds-form-element__label slds-p-top--x-small" for="select-01">{!$ObjectType.Request__c.fields.OldRequestCode__c.label}</label>
+                        <apex:outputPanel styleClass="slds-input">
+                            <apex:outputField value="{!request.OldRequestCode__c}"/>
+                        </apex:outputPanel>
+                    </div>
+                </apex:outputPanel>
+                
+                <apex:outputPanel layout="block" id="statusSec" style="padding-top:30px;" styleClass="slds-grid slds-wrap slds-grid--pull-padded">
+                    <apex:outputPanel styleclass="slds-form-element slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--1-of-2">
+                        <label class="slds-form-element__label slds-p-top--x-small" for="select-01">{!$ObjectType.Request__c.fields.Status__c.label}</label>
+                        <div class="slds-form-element__control">
+                            <apex:inputField value="{!request.Status__c}" styleClass="slds-select" rendered="{!mode = 'edit'}"/>
+                            <apex:outputPanel styleClass="slds-input" rendered="{!mode = 'view'}">
+                                <apex:outputField value="{!request.Status__c}"/>
+                            </apex:outputPanel>
+                        </div>
+                    </apex:outputPanel>
+                     <apex:outputPanel styleclass="slds-form-element slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--1-of-2">
+                        <label class="slds-form-element__label slds-p-top--x-small" for="select-01">{!$ObjectType.Request__c.fields.SubStatus__c.label}</label>
+                        <div class="selectStyle slds-form-element__control">
+                            <apex:inputField value="{!request.SubStatus__c}" styleClass="slds-select" rendered="{!mode = 'edit'}"/>
+                            <apex:outputPanel styleClass="slds-input" rendered="{!mode = 'view'}">
+                                <apex:outputField value="{!request.SubStatus__c}"/>
+                            </apex:outputPanel>
+                        </div>
+                    </apex:outputPanel>
+                    <apex:outputPanel styleclass="slds-form-element slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--1-of-2">
+                        <label class="slds-form-element__label slds-p-top--x-small" for="select-01">{!$ObjectType.Request__c.fields.Note__c.label}</label>
+                        <div class="slds-form-element__control">
+                            <apex:inputField value="{!request.Note__c}" styleClass="slds-input" rendered="{!mode = 'edit'}"/>
+                            <apex:outputText value="{!request.Note__c}" styleClass="slds-input" rendered="{!mode = 'view'}"/>
+                        </div>
+                    </apex:outputPanel>
+                </apex:outputPanel>
+                
+                <apex:outputPanel layout="block" id="fieldsSec" style="padding-top:30px;" styleClass="slds-grid slds-wrap slds-grid--pull-padded">
+                    <apex:repeat value="{!request.RequestsDetails__r}" var="fieldLine">
+                        <apex:outputPanel styleclass="slds-form-element slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--1-of-2">
+                            <label class="slds-form-element__label slds-p-top--x-small" for="select-01">{!fieldLine.FieldLabel__c}</label>
+                            <div class="slds-input">
+                                <apex:outputField value="{!fieldLine.FieldValue__c}"/>
+                            </div>
+                        </apex:outputPanel>
+                    </apex:repeat>
+                </apex:outputPanel>
+            </apex:outputPanel>
+            
+            <!----------------------------------------------------------------------------------------------------------------------->
+            <!----------------------------------------------------------------------------------------------------------------------->
+            <!------------------------------------------------- COMMERCIAL SECTION -------------------------------------------------->
+            <!----------------------------------------------------------------------------------------------------------------------->
+            <!----------------------------------------------------------------------------------------------------------------------->
+            
+            <apex:outputPanel layout="block" id="commercialSec" rendered="{!request.Category__c = 'Commercial'}">
+                <apex:inputField value="{!request.CreatedById}" style="display:none;"/>
+                <apex:repeat value="{!childRequests}" var="r">
+                    <!--<apex:inputField value="{!r.OwnerId}" style="display:none;"/>-->
+                    <apex:outputPanel layout="block" style="padding-top:30px;" styleClass="slds-grid slds-wrap slds-grid--pull-padded">
+                        <apex:outputPanel styleclass="slds-form-element slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--1-of-2">
+                            <label class="slds-form-element__label slds-p-top--x-small">{!$ObjectType.Request__c.fields.Approver__c.label}</label>
+                            <div class="slds-input">
+                                <apex:outputField styleClass="slds-input" value="{!r.Approver__c}"/>
+                            </div>
+                        </apex:outputPanel>
+                        <apex:outputPanel styleclass="slds-form-element slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--1-of-2">
+                            <label class="slds-form-element__label slds-p-top--x-small">{!$ObjectType.Request__c.fields.ApprovalType__c.label}</label>
+                            <div class="slds-input">
+                                <apex:outputField styleClass="slds-input" value="{!r.ApprovalType__c}"/>
+                            </div>
+                        </apex:outputPanel>
+                        <apex:outputPanel styleclass="slds-form-element slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--1-of-2">
+                            <label class="slds-form-element__label slds-p-top--x-small">{!$ObjectType.Request__c.fields.Note__c.label}</label>
+                            <div class="slds-form-element__control">
+                                <apex:outputText styleClass="slds-input" value="{!r.Note__c}"/>
+                            </div>
+                        </apex:outputPanel>
+                        <!--<apex:outputPanel styleclass="slds-form-element slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--1-of-2"/>-->
+                        <apex:outputPanel styleClass="slds-form-element slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--1-of-2">
+                            <apex:outputlabel styleClass="slds-form-element__label slds-p-top--x-small" for="select-01" rendered="{!r.Order__c = editableRowNumber}">{!$ObjectType.Request__c.fields.OwnerId.label}</apex:outputlabel>
+                            <apex:inputField value="{!r.OwnerId}" styleClass="slds-input" rendered="{!mode = 'edit'}" style="display:{! IF(r.Order__c = editableRowNumber, 'block', 'none')};"/>
+                            <apex:outputPanel styleClass="slds-input" rendered="{!mode = 'view' && r.Order__c = editableRowNumber}">
+                                <apex:outputField value="{!r.OwnerId}"/>
+                            </apex:outputPanel>
+                        </apex:outputPanel>
+                        <apex:outputPanel styleclass="slds-form-element slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--1-of-2">
+                            <label class="slds-form-element__label slds-p-top--x-small" for="select-01">{!$ObjectType.Request__c.fields.Status__c.label}</label>
+                            <div class="slds-form-element__control">
+                                <apex:inputField value="{!r.Status__c}" styleClass="slds-select" rendered="{!mode = 'edit' && r.Order__c = editableRowNumber}"/>
+                                <apex:outputPanel styleClass="slds-input" rendered="{!mode = 'view' || r.Order__c != editableRowNumber}">
+                                    <apex:outputField value="{!r.Status__c}" styleClass=""/>
+                                </apex:outputPanel>
+                            </div>
+                        </apex:outputPanel>
+                        <apex:outputPanel styleclass="slds-form-element slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--1-of-2">
+                            <label class="slds-form-element__label slds-p-top--x-small" for="select-01">{!$ObjectType.Request__c.fields.SubStatus__c.label}</label>
+                            <div class="selectStyle slds-form-element__control">
+                                <apex:inputField value="{!r.SubStatus__c}" styleClass="slds-select test" rendered="{!mode = 'edit' && r.Order__c = editableRowNumber}"/>
+                                <apex:outputPanel styleClass="slds-input" rendered="{!mode = 'view' || r.Order__c != editableRowNumber}">
+                                    <apex:outputField value="{!r.SubStatus__c}" styleClass=""/>
+                                </apex:outputPanel>
+                            </div>
+                        </apex:outputPanel>
+                        <apex:outputPanel styleclass="slds-form-element slds-p-horizontal--small slds-size--1-of-1 slds-medium-size--1-of-2">
+                            <label class="slds-form-element__label slds-p-top--x-small">{!$ObjectType.Request__c.fields.ApprovalSummary__c.label}</label>
+                            <div class="slds-form-element__control">
+                                <apex:inputField styleClass="slds-input" value="{!r.ApprovalSummary__c}" rendered="{!mode = 'edit' && r.Order__c = editableRowNumber}"/>
+                                <apex:outputText styleClass="slds-input" value="{!r.ApprovalSummary__c}" rendered="{!mode = 'view' || r.Order__c != editableRowNumber}"/>
+                            </div>
+                        </apex:outputPanel>
+                    </apex:outputPanel>
+                </apex:repeat>
+            </apex:outputPanel>
+            
+                                                         
+            <apex:outputPanel styleClass="slds-grid slds-grid--align-center slds-p-top--medium" id="saveButton">
+                <apex:commandButton action="{!saveRequest}" value="{!$Label.Save}" styleClass="slds-button" style="padding-left:10px;padding-right:10px;" rendered="{!mode='edit'}"/>
+                <apex:commandButton action="{!EditRequest}" value="{!$Label.Edit}" styleClass="slds-button" style="padding-left:10px;padding-right:10px;" rendered="{!mode='view' && HasEditAccess}"/>
+                <apex:commandButton action="{!reSend}" value="{!$Label.Re_Send}" styleClass="slds-button" rendered="{!mode='view' && HasEditAccess && request.Category__c = 'Commercial' && (request.Status__c = 'Rejected' || request.Status__c = 'Edit Details')}"/>
+            </apex:outputPanel>
+        </apex:form>
+    </div>
+    
+    <script>
+        function openProductURL(prodId){
+            if(sforce && sforce.console.isInConsole()){
+                sforce.console.getEnclosingPrimaryTabId(function openSubtab(result){
+                    var primaryTabId = result.id;
+                    sforce.console.openSubtab(primaryTabId,'/' + prodId + '?isdtp=vw',true,'',null,null,'');
+                });
+            }
+            else{
+                window.open('/' + prodId,'_blank');
+            }
+        }
+    </script>
+    
+</apex:component>

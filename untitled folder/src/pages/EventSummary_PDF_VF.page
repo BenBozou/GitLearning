@@ -1,0 +1,68 @@
+<apex:page controller="EventSummary_CTRL" renderAs="HTML" tabStyle="Event" showHeader="false" sidebar="false" language="he">
+   
+         
+         <div> 
+         <table border="1" width="100%">
+         <tr>
+         <td>
+          נושא הפגישה
+          &nbsp;
+           <apex:outputField value="{!eventToSummarize.Subject}"/>
+           </td>
+         <td>תאריך הפגישה &nbsp; <apex:outputField value="{!eventToSummarize.StartDateTime}"/></td>
+           </tr>
+           <tr colspan="1">
+         <td>
+          ממלא הטופס
+          &nbsp;
+           <apex:outputField value="{!eventToSummarize.OWNERID}"/>
+           </td>
+        
+           </tr>
+           <tr>
+               <td>
+               משתתפים
+               <apex:pageBlock >
+                <apex:pageBlockSection columns="1" title="Cellcom Participants">
+                   <apex:outputField value="{!eventToSummarize.Cellcom_Manager_Participants__c}"/>
+                </apex:pageBlockSection>
+              </apex:pageBlock>
+               
+               </td>
+           </tr>
+           
+           
+            <tr>
+               <td>
+               משתתפים לקוח
+               <apex:pageBlock >
+               
+                    <apex:pageBlockSection columns="1" title="Customer Participants">
+                        <apex:outputField value="{!eventToSummarize.Customer_Participants__c}"/>
+                    </apex:pageBlockSection>
+
+            </apex:pageBlock>
+               
+               </td>
+           </tr>
+           </table>
+           
+           
+         </div>
+                 
+        <apex:pageBlock title="Related Tasks" id="RelatedTaskPageBlock" rendered="{!!PageError}">
+            <apex:pageBlockTable value="{!relatedTaskList}" var="currentTask">
+                <apex:column headerValue="{!$ObjectType.Task.fields.Subject.Label}">
+                    <apex:outputLink value="/{!currentTask.Id}">{!currentTask.Subject}</apex:outputLink>
+                </apex:column>
+                <apex:column value="{!currentTask.ActivityDate}"/>
+                <apex:column value="{!currentTask.status}"/>
+                <apex:column value="{!currentTask.Priority}"/>
+                <apex:column value="{!currentTask.WhoID}"/>
+                <apex:column value="{!currentTask.WhatId}"/> 
+                <apex:column value="{!currentTask.OwnerId}"/>
+            </apex:pageBlockTable>
+        </apex:pageBlock>
+
+     
+</apex:page>

@@ -1,0 +1,6 @@
+<apex:page >
+<a href="file://isiloncorp1/cellcom_invoice_qa/QA/BillingBILL_298700379_46.pdf" target="_blank">go to link</a>
+<script>
+window.location.href= "file://isiloncorp1/cellcom_invoice_qa/QA/BillingBILL_298700379_46.pdf";
+</script>
+</apex:page>

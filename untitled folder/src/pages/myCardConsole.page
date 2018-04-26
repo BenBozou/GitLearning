@@ -1,0 +1,63 @@
+<apex:page docType="html-5.0" applyHtmlTag="false" showHeader="false" sidebar="false"
+    standardStylesheets="false" controller="vlocity_cmt.CardCanvasController">
+    <html xmlns:ng="http://angularjs.org" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg"
+        xmlns:xlink="http://www.w3.org/1999/xlink" ng-app="myApp" class="ng-cloak" style="height:100%"
+        dir="{!IF(isLanguageRTL, 'rtl', 'ltr')}">
+
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <style type="text/css">
+            body {
+                margin: 0px !important;
+                padding: 0px !important;
+                background: #f9f9f9;
+                font-family: 'icomoon', Fallback, sans-serif;
+            }
+
+        </style>
+
+        <!--<apex:stylesheet value="{!URLFOR($Resource.vlocity_cmt__vlocity_assets, '/css/vlocity.css')}"/>-->
+        <apex:stylesheet value="{!URLFOR($Resource.cellcom_icons, '/style.css')}" />
+
+
+        <!-- Salesforce Console API -->
+        <apex:includeScript value="/support/console/34.0/integration.js" />
+
+    </head>
+
+    <body>
+        <!--<c:CellcomIconComponent />-->
+
+        <!--<h1>My First Heading</h1>
+        <p>My first paragraph.</p>
+        <div class="cellcom-icon-Technition-visit"></div>
+          <div class="clearfix bshadow0 pbs">
+                <span class="cellcom-icon-B2C-Cellular"></span>
+               <!--  <span class="cellcom-icon-Accesability-indicator path2"> cellcom-icon-Accesability-indicator</span> -->
+        <!--not working-->
+        <!-- <span class="cellcom-icon-Added-Value-B2B"></span>
+            </div>
+          <div>
+            <span class="cellcom-icon-Accesability-indicator">
+            <span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span>
+            <span class="mls"></span>
+            </span>
+         </div>-->
+
+        <!-- Component loads the vloc-layout and cards - defaults to Grid if no layout parameter is present -->
+        <!-- <c:CardLayoutComponent layout="Grid" controllers="myCtrl" modules="myApp"/> -->
+
+        <vlocity_cmt:CardLayoutComponent layout="ICONS" modules="myApp" />
+
+
+        <script type="text/javascript">
+            var myApp = angular.module('myApp', ['forceng', 'consoleCards']);
+
+        </script>
+
+    </body>
+
+    </html>
+
+</apex:page>

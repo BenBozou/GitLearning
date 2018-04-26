@@ -1,0 +1,60 @@
+<!--
+  @author - J.C
+  @date   - March 2017
+  @U.S    - PLR-976 Event Summary
+ 
+  @description
+        The component is used into the "Event_Summary_Email" Email Template retrieving the tasks related to the event summary email.
+            - The tasks are "related" to the Event using 2 custom text fields (EventID__c, EventName__c) containing the Event Id and the Event Name.
+ -->
+ <apex:component controller="EmailSummary_CMP_CTRL" allowDML="true" access="global" layout="none">
+ <style>
+ 
+    
+ </style>
+    <apex:attribute name="event_Id" description="Event Id" type="id" assignTo="{!eventId}"/>
+    <apex:variable var="table_row_header_background" value="background: #6E2C6B;background: rgba(110, 44, 107, 1); font-weight: bold;font-size: 12px;color: #71D6E0;color: rgb(113, 214, 224);font-family: Arial, Helvetica, sans-serif;"/>
+    <apex:variable var="table_row_line_background_col2" value="background: #F2F2F2;background: rgba(242, 242, 242, 1);font-family: Arial, Helvetica, sans-serif; font-size: 12px;color: #636466;color: rgb(99, 100, 102); border-top: rgba(255, 255, 255, 255) 1px solid !important;"/>
+    <apex:variable var="table_row_line_background_col1" value="background: #F2F2F2;background: rgba(242, 242, 242, 1);font-family: Arial, Helvetica, sans-serif; font-size: 12px;color: #6E2C6B;color: rgb(110, 44, 107); border-top: rgba(255, 255, 255, 255) 1px solid !important;"/>
+    <apex:outputPanel rendered="{!IF(RetrieveRelatedTaskListVF.size > 0,true,false)}">
+    <br />
+   <apex:outputText value="{!$Label.EventRelatedTasks}" style="font-family: Arial, Helvetica, sans-serif;font-weight: bold;font-size: 18px;color: #4D4D4D;color: rgb(77, 77, 77);" />
+   <br />
+   <br />
+        <table border="0" width="100%" align="right" cellpadding="0" cellspacing="0" DIR="RTL" style="text-align:center;">
+        <td>
+            <tr>
+                <th style="{!table_row_header_background} width: 5%;">#</th>
+                <th style="{!table_row_header_background} width: 20%; text-align: right;">{!$ObjectType.Task.fields.Subject.Label}</th>
+                <th style="{!table_row_header_background} width: 30%; text-align: right;">{!$ObjectType.Task.fields.Description.Label}</th>
+                <th style="{!table_row_header_background} width: 15%;">{!$Label.DueDate}</th>
+                <th style="{!table_row_header_background} width: 15%;">{!$Label.AssignedTo}</th>
+                <th style="{!table_row_header_background} width: 15%;">{!$ObjectType.Task.fields.Status.Label}</th>
+            </tr>
+
+            <apex:variable var="index" value="{!1}"/>
+            <apex:repeat var="currTask" value="{!RetrieveRelatedTaskListVF}">
+                <tr>
+                    <td align="center" style="{!table_row_line_background_col1}">{!index}</td>
+                    <td style="{!table_row_line_background_col2} text-align:right; padding-right:1px;">
+                        <apex:outputField value="{!currTask.Subject} "/>
+                    </td>
+                    <td style="{!table_row_line_background_col1} text-align:right;">
+                        <apex:outputField value="{!currTask.Description} "/>
+                    </td>
+                    <td style="{!table_row_line_background_col2}">
+                    <apex:outputField value="{!currTask.ActivityDate}"/>
+                    </td>
+                    <td style="{!table_row_line_background_col1}">
+                    <apex:outputField value="{!currTask.OwnerId}"/>
+                    </td>
+                    <td style="{!table_row_line_background_col2}">
+                    <apex:outputField value="{!currTask.Status}"/>
+                    </td>
+                </tr>
+                <apex:variable var="index" value="{!index + 1}"/>
+            </apex:repeat>
+            </td>                
+        </table>
+        </apex:outputPanel>
+</apex:component>

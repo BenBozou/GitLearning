@@ -1,0 +1,480 @@
+<!--
+/**
+*   this psge will be invoked from Account console layout. Also this page used a layout 'cellcom-sidebar' from Vlocity
+*   autor  Dmitry Rivlin
+*   taskId PLR-304
+*   @submodule ConsoleSidebar.page
+*/
+-->
+<apex:page controller="vlocity_cmt.CardCanvasController" docType="html-5.0" applyHtmlTag="true" showHeader="true" sidebar="false" standardStylesheets="false" action="{!PreLoad}" extensions="LinkEnvSupport" tabStyle="Account">
+    <html dir="{!IF(isLanguageRTL, 'rtl', 'ltr')}" lang="{!currentLang}">
+    <style type="text/css">
+        html{
+            font-size: 16px !important;
+        }
+        body {
+            margin: 0px !important;
+            padding: 0px !important;
+            background: #FFF;
+        }
+        #startLayout {
+            width: 22%;
+            float: right;
+            overflow-y: scroll;
+        }
+        #main-preview{
+            width: 75%;
+            border: 1px solid #cecaca;
+            float: right;
+            padding: 0 7px;
+        }
+        #main-preview iframe{
+            width: 100%;
+            border: 1px solid #b5b2b2;
+            height: 100%;
+        }
+        #breadcrumbs a{
+            color: #15377e;
+            font-size: 16px;
+            margin: 5px;
+            text-decoration: underline;
+            cursor: pointer;
+            width: 70%;
+        }
+        #breadcrumbs a.selected,  #static-links a.selected{
+            font-weight: bold;
+        }
+
+        #breadcrumbs{
+            margin: 5px 0;
+            float: right;
+        }
+        #wrapup-link{
+            display: none;
+            padding-right: 5px;
+            color: #15377e !important;
+        }
+        #detail-link,
+        #source-link{
+            color: #15377e !important;
+        }
+        #dol-link{
+            color: #15377e !important;
+            padding-right: 5px;
+        }
+        #lead-link{
+            display: none;
+            padding-right: 5px;
+            color: #15377e !important;
+        }
+        #static-links{
+            padding-left: 5px;
+            padding-right: 5px;
+            font-size: 16px;
+            margin: 5px;
+            cursor: pointer;
+            width: 70%;
+            float: left;
+            text-align: left;
+        }
+
+         .dropdown, .dropup {
+            position: fixed;
+            height: 0px;
+         }
+
+         .dropdown-menu {
+             box-shadow: none !important;
+             border:none !important;
+             background-color: transparent !important;
+             height:0px;
+         }
+
+          .btnDropDwon,
+          .btn-primary:hover{
+              background-color: rgb(108, 33, 111) !important;
+              color: white !important;
+              background:none;
+          }
+
+          #linksIframe{
+
+              max-height: 340px;
+             
+          }
+          
+          #static-links a + a:after {
+              content: "|";
+              padding: 0 8px;
+            }
+        .spinnerMin {
+            height: 100px;
+        }
+
+    </style>
+
+    <!--<apex:stylesheet value="{!URLFOR($Resource.vlocity_cmt__vlocity_assets, '/css/vlocity.css')}" />-->
+    <apex:includeScript value="{!URLFOR($Resource.console_Resources, '/JS/cardLink.js')}" />
+    <!--<script src="http://127.0.0.1:8080/cardLink.js"></script>-->
+
+    <!--<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>-->
+    <apex:includeScript value="/support/console/34.0/integration.js" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+    <apex:includeLightning />
+    <c:CellcomIconComponent />
+    <apex:stylesheet value="{!IF(isLanguageRTL, URLFOR($Resource.vlocity_rtl, '/assets/styles/salesforce-lightning-design-system-vf.rtl.min.css'), URLFOR($Resource.vlocity_rtl, '/assets/styles/salesforce-lightning-design-system-vf.min.css'))}" />
+
+    <div class="vlocity via-slds" ng-app="sidebarApp" ng-controller="accountCtrl" id="startLayout">
+        <div class="slds-spinner_container" id="app-spinner">
+         <div role="status" class="slds-spinner slds-spinner--medium">
+            <span class="slds-assistive-text">Loading</span>
+            <div class="slds-spinner__dot-a"></div>
+            <div class="slds-spinner__dot-b"></div>
+          </div>
+        </div>
+        
+        <vloc-layout spinner="true" ng-if="!popDataSharing" ctrl="{{injectedController}}" layout-id="{{layoutId}}" layout-name="{!acc.SidebarLayout__c}"></vloc-layout>
+        <!-- Sidebar layout-->
+    </div>
+
+    <div id="main-preview">
+        <div id="breadcrumbs"></div>
+        <div id="static-links">
+
+           
+            
+            <a href="javascript:void(0)" id="lead-link" onclick="openLead()">המלצה</a>
+            <a href="javascript:void(0)" id="wrapup-link" onclick="openWrapUp()">סיכום שיחה</a>
+            <a href="javascript:void(0)" id="detail-link" onclick="openDetailPage()">פירוט</a>
+            <a href="javascript:void(0)" id="dol-link" onclick="openDol()">מעבר לDOL</a>
+            
+            <span class="dropdown">
+
+                 <a href="javascript:void(0)" id="source-link" data-toggle="dropdown">מעבר למערכות מקור</a>
+    
+                <ul class="dropdown-menu">
+                <iframe frameborder="0" height="330px" width="300px" id="linksIframe" name="linksIframe" scrolling="no" src="ConsoleCards_Preview?layout=B2CActionsToolBarLayout" title="Content" style="height: 480px;width: 300px;"></iframe>
+                </ul>
+              </span>
+            
+        </div>
+
+        <span id="iframe-container"></span>
+    </div>
+
+
+    <script src="{!URLFOR($Resource.vlocity_cmt__vlocity_assets, '/javascripts/vlocity.js')}"></script>
+    <script src="{!URLFOR($Resource.vlocity_cmt__vlocity_assets, '/bower_components/forceng/forceng.js')}"></script>
+    <script src="{!URLFOR($Resource.vlocity_cmt__vlocity_assets, '/bower_components/ForceTK/forcetk.js')}"></script>
+    <script src="{!$Resource.vlocity_cmt__CardFramework}"></script>
+    <script src="{!$Resource.vlocity_cmt__SldsAngular}"></script>
+    <script src="{!URLFOR($Resource.console_Resources, '/JS/cl-directives.js')}"></script>
+
+    <script type="text/javascript">
+        window.currEnvironmentAllLinks = {!urlLinkList};
+        window.primaryContactId = '{!JSENCODE(primaryContactId)}';
+        //console.log('1111window.primaryContactId '+ window.primaryContactId);
+        window.wrapUpNeeded = false;
+        //var sideBarModule = angular.module('sidebarApp',['CardFramework', 'vlocity']);
+        //var layoutName = 'Account-console-sidebar';
+        var layoutName ='{!JSENCODE(layoutName)}';
+        console.log('layoutName',layoutName);
+        var sideBarModule = angular.module('sidebarApp', ['CardFramework', 'vlocity', 'forceng', 'cfp.hotkeys','cl-directives']);
+
+
+        sideBarModule.config(['$localizableProvider', function($localizableProvider) {
+            'use strict';
+            $localizableProvider.setLocalizedMap(window.i18n);
+            $localizableProvider.setDebugMode(window.ns === '');
+        }]);
+        // this is used for remoteActions config inside CardFramework
+        // this is duplicated in both ConsoleSidebar.page and CardLayoutComponent.component to facilitate
+        // independent testing of the left handside vs right handside of the console
+        var nsPrefixDotNotation = "{!nsPrefixDotNotation}";
+        console.log('nsPrefixDotNotation fetched from CardCanvasController: ' + nsPrefixDotNotation);
+        localStorage.setItem('nsPrefixDotNotation', nsPrefixDotNotation);
+        console.log('nsPrefixDotNotation value stored in localStorage: ' + localStorage.getItem('nsPrefixDotNotation'));
+
+        /*var myEvent = window.attachEvent || window.addEventListener;
+        var chkevent = window.attachEvent ? 'onbeforeunload' : 'beforeunload';
+        myEvent(chkevent, function(e) {
+        if( window.wrapUpNeeded ) {
+            var confirmationMessage = 'האם את/ה בטוח/ה שברצונך לצאת ללא מילוי סיכום שיחה?';
+            (e || window.event).returnValue = confirmationMessage;
+            return confirmationMessage;
+            }
+        });*/
+
+        sideBarModule.filter('phoneNumber', function() {
+            return function(phoneNumber) {
+                phoneNumber = phoneNumber || '';
+                //Removes all special charaters in phonenumber except numbers and +
+                phoneNumber = phoneNumber.replace(/[^\d\+]/g, "");
+                return phoneNumber;
+            };
+        });
+
+        sideBarModule.run(["$sce", "$rootScope", "force", "timeStampInSeconds", function($sce, $rootScope, force, timeStampInSeconds) {
+            console.log('inside run');
+            force.init({
+                accessToken: '{!$Api.Session_ID}',
+                useProxy: false
+            });
+            $rootScope.forcetkClient = new forcetk.Client();
+            $rootScope.forcetkClient.setSessionToken('{!$Api.Session_ID}');
+        }]);
+
+        sideBarModule.controller('accountCtrl', ['$scope', '$rootScope', 'timeStampInSeconds', 'dataService', 'pageService', '$localizable', '$compile', '$window', function($scope, $rootScope, timeStampInSeconds, dataService, pageService, $localizable, $compile, $window) {
+            $scope.layoutName = pageService.params.layout ? pageService.params.layout : layoutName;
+            $scope.layoutId = pageService.params.layoutId;
+            $scope.popDataSharing = {!popDataSharing};
+            $scope.customerInteractionId = '{!JSENCODE(customerInteractionId)}';
+            $rootScope.isAdminUser = ("{!isAdminUser}" == "true");
+            $rootScope.isCommunityUser = ("{!InCommunity}" == "true");
+
+            console.log('customerInteractionId ' + $scope.customerInteractionId );
+
+            var setContactId = function() {
+                $rootScope.contactId = window.primaryContactId;
+                if (typeof urlParams.contactId !== "undefined") {
+                    $rootScope.contactId = urlParams.contactId;
+                }
+            }
+            console.log('window.primaryContactId '+ window.primaryContactId);
+            console.log('$rootScope.contactId '+ $rootScope.contactId);
+
+            function urlToJSON(url) {
+                var query = url.replace(/^(.*)\?(.*)$/, "$2");
+                var result = {};
+                query.split("&").forEach(function(part) {
+                    var item = part.split("=");
+                    result[item[0]] = decodeURIComponent(item[1]);
+                });
+                return result;
+            }
+
+            function getJsonFromUrl() {
+              var query = location.search.substr(1);
+              return urlToJSON(query);
+            }
+
+
+
+            window.breadcrumbs = [];
+
+            window.redirect_mainpreview = function(url){
+                $('#app-spinner').show();
+                $('#iframe-container').empty();
+                var $iframe = $('<iframe src="' + getCommunityUrl(url) + '"/>');
+                $iframe.appendTo('#iframe-container');
+                $iframe.load(function(){
+                    $('#app-spinner').hide();
+                });
+                setMainSize();
+            }
+
+            var addBreadcrumb = function(url,label){
+                breadcrumbs.push({label: label, url: url});
+                buildBreadcrumb();
+            }
+
+            window.loadUrl_mainpreview = function(url,label){
+                redirect_mainpreview(url);
+                addBreadcrumb (url, label);
+            }
+
+
+            var isDefined = function(data){
+                return (typeof data !== 'undefined' &&  data != null && data != '');
+            }
+
+            var openAllActions = function(){
+                angular.forEach($scope.consoleCardsAction, function(action) {
+
+                        var url = action.url.replace(/(contactId=).*$/i, "$1" + $rootScope.contactId);
+                        var tabLabel = action['displayName'];
+                        if (!$scope.popDataSharing){
+                            if (action['name'] === 'ConsoleCardsProduct'){
+                                if(isDefined(urlParams.productId)){
+                                    url = url.replace(/(productId=)/i, "$1" + urlParams.productId);
+                                    url = url.replace(/(layout=)/i, "$1" + urlParams.layout);
+                                    loadUrl_mainpreview(url,urlParams.subscriber);
+                                }
+                                else if(isDefined(urlParams.ItemName)){
+                                    url = url.replace(/(ItemName=)/i, "$1" + urlParams.ItemName);
+                                    url = url.replace(/(LineCode=)/i, "$1" + urlParams.LineCode);
+                                    url = url.replace(/(layout=)/i, "$1" + urlParams.layout);
+                                    loadUrl_mainpreview(url,urlParams.LineCode);
+                                }
+                            }
+                            // Open 360
+                            if (action['name'] === 'ConsoleCards') {
+                                tabLabel += ' - {!acc.Name}';
+                                if( typeof window.urlParams.leadUrl === "undefined"  ) {
+                                    loadUrl_mainpreview(url,tabLabel);
+                                }
+                                else {
+                                    addBreadcrumb(url,tabLabel);
+                                    $('#lead-link').show();
+                                    openLead();
+                                }
+                            }
+                            if (action['name'] === 'ConsoleCardsWrapUp') {
+                                var interactionId = $scope.customerInteractionId;
+                                url = url.replace(/(id=)/i, "$1" + interactionId); //WRAP UP
+                                url = url.replace(/(accountId=)/i, "$1" + $rootScope.accountId);
+                                window.customerInteraction = {url: url, label: tabLabel};
+                                window.wrapUpNeeded = true;
+                                $('#wrapup-link').show();
+                            }
+
+                        }else{
+                            if (action['name'] === 'DataSharing') {
+                                loadUrl_mainpreview(url,tabLabel);
+                            }
+                        }
+                        if (action['name'] === 'DOLMain') {
+                            window.dolUrl = action.url;
+                            console.log('dolUrl :',window.dolUrl);
+                        }
+
+                    });
+            }
+
+            window.openLead = function() {
+                $("#static-links #lead-link").addClass("selected");
+                $("#static-links #wrapup-link").removeClass("selected");
+                $("#static-links #detail-link").removeClass("selected");
+                $("#breadcrumbs a:last-child").removeClass("selected");
+                $("#static-links #dol-link").removeClass("selected");
+                redirect_mainpreview(decodeURIComponent(urlParams.leadUrl));
+            }
+
+            $scope.init = function() {
+                window.urlParams = getJsonFromUrl();
+                setContactId();
+                $rootScope.accountId = $scope.accountId = urlParams.id;
+                $rootScope.entitySelected = true;
+                //we no longer pass the objType as we differ it inside of apex to make Console Cards actions agnostic
+                dataService.getConsoleCardsAction(null, urlParams.id, $rootScope.forcetkClient).then(
+                    function(action) {
+                        //All Action with type = "Console Cards"
+                        $scope.consoleCardsAction = action;
+                        console.log('action completed:', $scope.consoleCardsAction);
+                        var actionParams = urlToJSON(decodeURIComponent($scope.consoleCardsAction[0].url));
+                        //$('#startLayout').append($compile('<vloc-layout layout-name="' + actionParams.layoutSidebar + '" session-id="{{session-id}}" layout-id="{{layoutId}}"/>')($scope));
+                        openAllActions();
+                    });
+
+
+
+            };
+
+            $scope.init();
+
+        }]);
+
+        sideBarModule.controller('viaConsoleRightSidebar', ['$scope', '$rootScope', '$timeout', function($scope, $rootScope, $timeout) {
+            function initProfiler() {
+                if (!$Lightning) {
+                    $timeout(initProfiler, 2000);
+                }
+                if ($Lightning) {
+                    var nsPrefix = localStorage.getItem('nsPrefixDotNotation')
+                    var lightningNsPrefix = nsPrefix.substring(0, nsPrefix.length - 1) + ':';
+                    var ltngOutVFComponentName = lightningNsPrefix + "ltngOutVF";
+                    var profileTopLevelContainerViewComponentName = lightningNsPrefix + "profileTopLevelContainerView";
+                    $Lightning.use(ltngOutVFComponentName, function() {
+                        $Lightning.createComponent(profileTopLevelContainerViewComponentName, {
+                                entityId: $rootScope.accountId
+                            },
+                            "lightning-profiler",
+                            function(cmp) {});
+                    });
+                }
+            }
+            initProfiler();
+        }]);
+    </script>
+    <!--<script src="http://127.0.0.1:8080/mini-console.js"></script>-->
+    <!--<apex:includeScript value="{!URLFOR($Resource.console_Resources, '/JS/mini-console.js')}" />-->
+    <script>
+        function getCommunityUrl(url){
+            var communityPrefix = window.location.pathname.split('/')[1];
+            if(communityPrefix.indexOf('apex') !== 0){
+                url = '/' + communityPrefix + url;
+            }
+            return url;
+        }
+
+        function openWrapUp() {
+            $("#static-links #wrapup-link").addClass("selected");
+            $("#static-links #detail-link").removeClass("selected");
+            $("#breadcrumbs a:last-child").removeClass("selected");
+            $("#static-links #dol-link").removeClass("selected");
+            $("#static-links #lead-link").removeClass("selected");
+            redirect_mainpreview(customerInteraction.url);
+        }
+
+        function openDetailPage() {
+            $("#static-links #detail-link").addClass("selected");
+            $("#static-links #wrapup-link").removeClass("selected");
+            $("#breadcrumbs a:last-child").removeClass("selected");
+            $("#static-links #dol-link").removeClass("selected");
+            $("#static-links #lead-link").removeClass("selected");
+            var url = getCommunityUrl('/' + window.urlParams.id + '?nooverride=1');
+            window.open(url);
+        }
+
+        function openDol() {
+            $("#static-links #dol-link").addClass("selected");
+            $("#static-links #wrapup-link").removeClass("selected");
+            $("#breadcrumbs a:last-child").removeClass("selected");
+            $("#static-links #detail-link").removeClass("selected");
+            $("#static-links #lead-link").removeClass("selected");
+            var url = window.dolUrl;
+            window.open(url);
+        }
+
+        function buildBreadcrumb(){
+            var bc = $("#breadcrumbs");
+            bc.empty();
+            for(var i=0; i<breadcrumbs.length; i++){
+                var $a = $('<a href="javascript:void(0)" onclick="selectBreadcrumb('+i+')">' + breadcrumbs[i].label + "</a>");
+                bc.append($a);
+                if(i < breadcrumbs.length -1){
+                    var $sep = $('<span class="separator">&gt;</span>');
+                    bc.append($sep);
+                }
+            }
+            $("#breadcrumbs a:last-child").addClass("selected");
+            $("#static-links #detail-link").removeClass("selected");
+            $("#static-links #wrapup-link").removeClass("selected");
+            $("#static-links #dol-link").removeClass("selected");
+            $("#static-links #lead-link").removeClass("selected");
+        }
+
+        function selectBreadcrumb(index){
+            redirect_mainpreview(breadcrumbs[index].url);
+            breadcrumbs = breadcrumbs.slice(0,index+1);
+            buildBreadcrumb();
+        }
+
+        function setMainSize(){
+            var heightMain = $( window ).height() - $(".bPageHeader").height() - 15;
+            $("#startLayout").height(heightMain);
+            $("#main-preview iframe").height(heightMain - 35);
+        }
+
+        $( window ).ready(function(){
+            setMainSize();
+            $( window ).resize(setMainSize);
+
+
+        });
+    </script>
+    </html>
+</apex:page>

@@ -1,0 +1,143 @@
+<apex:page showHeader="true" sidebar="false"
+    standardStylesheets="false"
+    docType="html-5.0" applyBodyTag="false"
+    controller="Template_DeactivateController">
+    <apex:includeScript value="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js" />
+    <apex:includeScript value="//cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.17.8/js/jquery.tablesorter.min.js"/>
+    <apex:stylesheet value="//cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.17.8/css/theme.green.css"/>
+    <apex:stylesheet value="{!URLFOR($Resource.vlocity_cmt__slds, '/assets/styles/salesforce-lightning-design-system-vf.min.css')}"/>
+    <apex:stylesheet value="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"/>
+    <style>
+        a {
+        font-size:15px;
+        font-weight:bold;
+        }
+        .tablesorter-green th, .tablesorter-green td {  
+        border-right: none;
+        border-left: none;
+        }
+        .btnDiv {
+        padding: 15px;
+        }
+        .checkbox {
+        clip: rect(0 0 0 0);
+        }
+        .templTxt{
+        border: solid 1px #015ba7;
+        width: 30%;
+        font-family: "Salesforce Sans", Arial, sans-serif;
+        } 
+        .vlcheader {
+        padding-top:20px;
+        }
+        .titleVlcSec {
+        font-family: "Salesforce Sans", Arial, sans-serif;
+        font-size: x-large;
+        }    
+        .titleVlc {
+        font-family: "Salesforce Sans", Arial, sans-serif;
+        line-height: 1.25;
+        color: #54698d;
+        text-transform: uppercase;
+        letter-spacing: .0625rem;
+        } 
+        
+        .input[type=checkbox], input[type=radio] {
+            margin-left:20px;
+        } 
+        
+        label {
+            font-family: "Salesforce Sans", Arial, sans-serif;
+        } 
+        
+        .radioBtnsTable {
+            padding:20px;
+            margin-left: -25px;
+        } 
+    </style>
+    
+    <script>
+        $(document).ready(function()
+        {
+          sortTableInit();
+        });
+        
+        function sortTableInit() {
+        
+            $("[id$='accsTable']").tablesorter({theme: 'green'});
+            $("[id$='accsTable2']").tablesorter({theme: 'green'});
+        }
+    </script>
+    <div class="container">
+        <div class="vlcheader">
+            <div class="titleVlc">Vlocity</div>
+            <div class="titleVlcSec">Layouts and Templates Deactivate</div>
+        </div>
+        <apex:outputpanel >
+            <apex:actionstatus id="actStatusId">
+                <apex:facet name="start">
+                    <div class="waitingSearchDiv" id="el_loading" style="background-color: #DCD6D6;
+                        height: 100%;opacity:0.65;width:100%;">
+                        <div class="waitingHolder" style="top: 74.2px; width: 91px;">
+                            <img class="waitingImage" src="https://i.stack.imgur.com/pK4a5.gif" />
+                        </div>
+                    </div>
+                </apex:facet>
+            </apex:actionstatus>
+        </apex:outputpanel>
+        <apex:form Id="tableForm">
+        
+        <div class="radioBtnsTable">
+          <apex:selectRadio value="{!selectedComponent}">
+          <apex:actionSupport event="onchange" action="{!changeLists}" reRender="tableForm" status="actStatusId" oncomplete="sortTableInit();"/>
+            <apex:selectOptions value="{!items}"/>
+            </apex:selectRadio><p/>
+           </div> 
+            <apex:pageMessages Id="pgMsg"/>
+            <div class="btnDiv">
+                <apex:inputTextArea value="{!templatesTextArea }" rows="8" styleclass="templTxt" Id="tmplInput" html-placeholder="Paste Layouts or Template names here to deactivate them"/>
+            </div>
+            <div class="btnDiv">
+                <apex:commandButton value="Deactivate" action="{!dactivateTemplates}" styleclass="btn btn-primary active" rerender="tmplInput,pgMsg, accsTable, accsTable2" status="actStatusId"
+                    oncomplete="sortTableInit();"/>
+            </div>
+            
+            <!--    *************  TEMPLATES TABLE    *******************   -->
+            <apex:dataTable value="{!templates_List}" var="temp" styleclass="table table-striped table-bordered table-hover" id="accsTable" rendered="{!IF(selectedComponent == 'Templates','true','false')}">
+                <apex:column >
+                    <apex:inputCheckbox value="{!temp.vlocity_cmt__Active__c }" styleclass="checkbox"/>
+                </apex:column>
+                <apex:column headerValue="Template Name" styleclass="slds-tree__item">
+                    <apex:outputlink value="apex/vlocity_cmt__uitemplatedesigner?id={!temp.Id}">
+                        <apex:outputfield value="{!temp.Name}" styleclass="slds-truncate"/>
+                    </apex:outputlink>
+                </apex:column>
+                <apex:column headerValue="Type" styleclass="slds-tree__item">
+                    <apex:outputfield value="{!temp.vlocity_cmt__Type__c}" styleclass="slds-truncate"/>
+                </apex:column>
+                <apex:column headerValue="Last Modified" styleclass="slds-tree__item">
+                    <apex:outputfield value="{!temp.LastModifiedDate}" styleclass="slds-truncate"/>
+                </apex:column>
+            </apex:dataTable>
+            
+            <!--    *************  LAYOUTS TABLE    *******************   -->
+            <apex:dataTable value="{!layouts_List }" var="temp" styleclass="table table-striped table-bordered table-hover" id="accsTable2" rendered="{!IF(selectedComponent != 'Templates','true','false')}">
+                <apex:column >
+                    <apex:inputCheckbox value="{!temp.vlocity_cmt__Active__c}" styleclass="checkbox"/>
+                </apex:column>
+                <apex:column headerValue="Layout Name" styleclass="slds-tree__item">
+                    <apex:outputlink value="apex/vlocity_cmt__uitemplatedesigner?id={!temp.Id}">
+                        <apex:outputfield value="{!temp.Name}" styleclass="slds-truncate"/>
+                    </apex:outputlink>
+                </apex:column>
+                <apex:column headerValue="Type" styleclass="slds-tree__item">
+                    <apex:outputfield value="{!temp.vlocity_cmt__Type__c}" styleclass="slds-truncate"/>
+                </apex:column>
+                <apex:column headerValue="Last Modified" styleclass="slds-tree__item">
+                    <apex:outputfield value="{!temp.LastModifiedDate}" styleclass="slds-truncate"/>
+                </apex:column>
+            </apex:dataTable>
+            
+        </apex:form>
+    </div>
+</apex:page>

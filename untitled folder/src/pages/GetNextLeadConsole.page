@@ -1,0 +1,279 @@
+<!--
+/**
+*   This page will be invoked from console and call remote action to get next lead
+*   Tal Sabati
+*   taskid PLR-633
+*   @module Leads
+*   @submodule GetNextLeadConsole.page
+*/
+-->
+<apex:page controller="GetNextLeadController" extensions="LinkEnvSupport">
+    <apex:includeScript value="{!URLFOR($Resource.jquery, 'jquery.min.js')}"/>
+    <apex:includeScript value="/support/console/38.0/integration.js"/>
+    <apex:stylesheet value="{!IF(isLanguageRTL, URLFOR($Resource.vlocity_rtl, '/assets/styles/salesforce-lightning-design-system-vf.rtl.min.css'), URLFOR($Resource.vlocity_rtl, '/assets/styles/salesforce-lightning-design-system-vf.min.css'))}" />
+    <script type="text/javascript">
+    
+        Visualforce.remoting.timeout = 120000; // Set timeout at page level to 2 minutes
+        var numberOfOpenTab = 0;
+        var maxNumberOfOpenTab = 3;
+        var numberOfLoginOmniChannel = 0;
+        var maxNumberOfLoginOmniChannel = 100;
+        
+        var checkAndCloseTab = function(tabId){
+            var interactionEventPrefix = '{!interactionEventPrefix}';
+            sforce.console.getPageInfo(tabId , function(tabInfo) {
+                if(typeof tabInfo.pageInfo !== "undefined"){
+                    var pageInfo = JSON.parse(tabInfo.pageInfo);
+                    if(typeof checkAndCloseTab !== "undefined" && pageInfo.objectId.substring(0, 3) === interactionEventPrefix){
+                        sforce.console.closeTab(tabId);
+                    }
+                }
+            });
+        }
+
+        var closeInteractionEventTabs = function(){
+            sforce.console.getPrimaryTabIds(function(result){
+                for(var i=0; i<result.ids.length; i++){
+                    checkAndCloseTab(result.ids[i]);
+                }
+            });
+        }
+
+        var openSubTab = function(primaryTabId, interactionEventRecord){
+            if(typeof interactionEventRecord.SubtabURL__c !== "undefined"){
+                var url = decodeURIComponent(interactionEventRecord.SubtabURL__c);
+                sforce.console.openSubtab(primaryTabId , url, true,interactionEventRecord.SubtabLabel__c, null, function(){}, 'salesforceSubtab_'+url);
+            }
+        }
+        
+        var openLeadUrl = function (){ 
+            Visualforce.remoting.Manager.invokeAction('{!$RemoteAction.GetNextLeadController.getLeadFromClient}',
+                function(consoleLink, event){
+                    if (event.status) {
+                        if(consoleLink.message != null){
+                            //alert(consoleLink.message);
+                            $('#app-spinner').hide();
+                            $('#app-message').html(consoleLink.message);
+                            $('#app-message').show();
+                        }
+                        else{
+                            //openURL(consoleLink);
+                            openURL(consoleLink.interactionEvent);
+                            hideWindow();
+                        }
+                    }
+                    else{
+                        $('#app-spinner').hide();
+                        $('#app-message').html('{!$Label.GetLeadClientFailure}');
+                        $('#app-message').show();
+                    }
+                },
+                {escape: false});
+        }
+
+        var getNextLead = function (result) {
+            $('#app-message').hide();
+            sforce.console.setCustomConsoleComponentVisible(true);
+            $('#app-spinner').show();
+            openLeadUrl();
+            //hideWindow();
+        };
+
+        var hideWindow = function (result) {
+            sforce.console.setCustomConsoleComponentVisible(false);
+        };
+        
+        var openSearchPrimaryTab = function(interactionEventRecord, tabLabel, tabName){
+            sforce.console.openPrimaryTab(null, interactionEventRecord.URL__c , true , tabLabel, function(primaryTab){
+                if(primaryTab.success) {
+                    sforce.console.focusPrimaryTabByName(tabName, function(){});
+                    openSubTab(primaryTab.id, interactionEventRecord);
+                }
+                else{
+		            if(numberOfOpenTab < maxNumberOfOpenTab){
+		                numberOfOpenTab ++;
+		                openURL(interactionEventRecord);
+		            }
+                }
+            }, tabName);
+        }
+
+        var openURL = function(interactionEventRecord){
+            closeInteractionEventTabs();
+            if(typeof interactionEventRecord !== "undefined" && typeof interactionEventRecord.URL__c !== "undefined"){
+                console.log('interactionEventRecord.CallType__c ', interactionEventRecord.CallType__c);
+                console.log('interactionEventRecord ', interactionEventRecord);
+                if(interactionEventRecord.CallType__c == 'Outbound'){
+                    console.log('11 name: ', interactionEventRecord.Name);
+                    openSearchPrimaryTab(interactionEventRecord, interactionEventRecord.Name, 'Search Screen');
+                }
+                else if(interactionEventRecord.OpenScreen__c == "MainScreen360"){
+                    console.log('22 name: ', interactionEventRecord.Name);
+                    openSearchPrimaryTab(interactionEventRecord, interactionEventRecord.Name, 'salesforceTab_' + interactionEventRecord.URL__c);
+                }
+                else{
+                    console.log('33 name: ', interactionEventRecord.Name);
+                    openSearchPrimaryTab(interactionEventRecord, 'Search Screen', 'Search Screen');
+                }
+            }
+        }
+
+        var setInteractionEvent = function (interactionEventId){
+            Visualforce.remoting.Manager.invokeAction('{!$RemoteAction.GetNextLeadController.getInteractionEvent}',
+                interactionEventId,
+                function(interactionEventRecord, event){
+                    if (event.status) {
+                        openURL(interactionEventRecord);
+                    }
+                    else{
+                        setInteractionEvent(interactionEventId);
+                    }
+                },
+                {escape: false});
+        }
+
+        var setEventAccept = function(){
+            sforce.console.addEventListener(sforce.console.ConsoleEvent.PRESENCE.WORK_ACCEPTED, function(result) {
+                var interactionEventPrefix = '{!interactionEventPrefix}';
+                if(result.workItemId.indexOf(interactionEventPrefix) === 0){
+                    setInteractionEvent(result.workItemId);
+                }
+                sforce.console.presence.closeAgentWork(result.workId);
+            });
+
+        }
+
+        var loginOmniChannel = function() {
+            Visualforce.remoting.Manager.invokeAction('{!$RemoteAction.GetNextLeadController.getOmniChannelLogInNecessary}',
+                function(isOmniChannelLogInNecessary, event){
+                    if(event.status){
+                        loginOmniChannelHelper(isOmniChannelLogInNecessary);
+                    }
+                    else{
+                        loginOmniChannelHelper(true);
+                    }
+                }
+            );
+        }
+        
+        var loginOmniChannelHelper = function(isOmniChannelLogInNecessary){
+            if(isOmniChannelLogInNecessary) {
+                var servicePresenceStatus = '{!servicePresenceStatus.id}';
+                servicePresenceStatus = servicePresenceStatus.substring(0,15);
+                sforce.console.presence.setServicePresenceStatus(servicePresenceStatus, function(result) {
+                    if (result.success) {
+                        console.log('Login Omni channel succeeded');
+                    } else {
+                        if(numberOfLoginOmniChannel < maxNumberOfLoginOmniChannel){
+                            numberOfLoginOmniChannel ++;
+                            setTimeout(function(){loginOmniChannelHelper(isOmniChannelLogInNecessary);}, 1000);
+                        }
+                    }
+                });
+            }
+        }
+        
+        var setEventStatusChanged = function(){
+            sforce.console.addEventListener(sforce.console.ConsoleEvent.PRESENCE.STATUS_CHANGED, function(result) {
+                var servicePresenceStatusLabel = '{!servicePresenceStatus.MasterLabel}';
+                if(result.statusApiName != servicePresenceStatusLabel){
+                    loginOmniChannel();
+                }
+            });
+        }
+
+        var setEventLogout = function(){
+            sforce.console.addEventListener(sforce.console.ConsoleEvent.PRESENCE.LOGOUT, function(result) {
+                loginOmniChannel();
+            });
+        }
+
+
+        var initSoftphone = function(){
+            sforce.console.setCustomConsoleComponentButtonText('');
+            sforce.console.setCustomConsoleComponentButtonIconUrl('');
+            sforce.console.onCustomConsoleComponentButtonClicked(hideWindow);
+        }
+
+        var initNOSoftphone = function(){
+            sforce.console.setCustomConsoleComponentButtonText('{!componentButtonName}');
+            sforce.console.onCustomConsoleComponentButtonClicked(getNextLead);
+        }
+		
+		var initOmniChannel = function(){
+            loginOmniChannelHelper({!!isAlreadyLogged});
+            setEventAccept();
+            setEventStatusChanged();
+            setEventLogout();
+        }
+        
+        var invokeRemoteAction = function (params, callback) {
+            params = typeof(params) == 'string' ? params :  JSON.stringify(params);
+            callback = typeof(callback) == 'function' ? callback : function(result, event){console.log('Without Callback', JSON.parse(result), event);};
+            //'LinkEnvSupport.hasTabClosed'
+            Visualforce.remoting.Manager.invokeAction(
+                '{!$RemoteAction.LinkEnvSupport.hasTabClosed}',
+                params,
+                callback, {'escape' : false, 'timeout' : 120000, 'buffer' : true}
+            );
+        }
+
+        /*var preventCloseTab = function(result) {
+
+            //We will work only with prymary tab and with Accounts
+            if (!(result.id.indexOf('-pt-') >0)) return;
+            if (!(result.objectId.indexOf('001')==0)) return;
+            if (result.objectId in winForClose) {
+                delete winForClose[result.objectId];
+                return;
+            }
+            invokeRemoteAction(result.objectId,
+                function (data, event) {
+                console.log(data);
+                    if (data != true) {
+                        sforce.console.openPrimaryTab(null, '/' + result.objectId, true);
+                        alert('{!$Label.msgTabIsMandatory}');
+                    }
+            });
+        }*/
+        var switchContact = function(res) {
+            setTimeout(function(){sforce.console.openPrimaryTab(null, res.message, true);}, 1000);
+
+            //winForClose[res.message.substring(0,15)] = 'SWITCH_CONTACT';
+        }
+
+        var initPage = function(){
+            //sforce.console.addEventListener(sforce.console.ConsoleEvent.CLOSE_TAB, preventCloseTab);
+            sforce.console.addEventListener('SWITCH_CONTACT_IN_ACCOUNT', switchContact);
+            sforce.console.addEventListener('GetNextLeadFromOmniScript', openLeadUrl);
+			sforce.console.addEventListener('OpenScreenFromInteractionEventRecord', function(result){
+	            setInteractionEvent(result.message);
+	        });
+        
+            if({!isSoftphone}){
+                initSoftphone();
+            }
+            else{
+                initNOSoftphone();
+            }
+            initOmniChannel();
+        }
+        var winForClose = {};
+        $(document).ready(initPage);
+    </script>
+    <div class="vlocity via-slds" style="width:100%">
+        
+        <div class="slds-spinner_container" id="app-spinner" style="width:100%">
+            <div style="width:100%; margin-left: auto; margin-right: auto; position: relative; top: 25px;text-align: center;">{!$Label.GetNextLeadLoadingMessage}</div>
+            <div role="status" class="slds-spinner slds-spinner--large">
+                <span class="slds-assistive-text">Loading</span>
+                <div class="slds-spinner__dot-a"></div>
+                <div class="slds-spinner__dot-b"></div>
+            </div>
+        </div>
+        
+        <div id="app-message" style="display:none;width: 80%;margin-left: auto; margin-right: auto; position: relative; top: 25px;">
+            
+        </div>
+    </div>
+</apex:page>

@@ -1,0 +1,58 @@
+<apex:page controller="OpportunityProductSplitController">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <style>
+        .label {
+            display: block;
+            text-align: center;
+            font-size: 28px;
+        }
+        .quantity {
+            display: block;
+            text-align: center;
+            font-size: 18px;
+        }
+        table.detailList {
+            width: 35% !important;
+            text-align: center;
+            margin: 0 auto;
+        }
+        .bPageBlock .detailList .labelCol {
+            width: 60%;
+        }
+    </style>
+    <apex:form id="fr">
+        <apex:pageMessages id="msg" />
+        <apex:pageBlock >
+            <apex:outputLabel value="{!$Label.LabelToSplitPage}" styleClass="label" /> <br/>
+            <apex:outputLabel value="{!SUBSTITUTE($Label.Total_Quantity,'{1}',Text(quantity))}" styleClass="quantity" /> <br/>
+            <apex:pageBlockSection >
+                <apex:pageBlockSectionItem id="firstTd">
+                    <apex:outputLabel value="{!$Label.Num_to_split}" />
+                    <apex:inputText value="{!countFromVF}" />
+                </apex:pageBlockSectionItem>
+                <br/>
+                <br/>
+                <br/>
+                <apex:pageBlockSectionItem rendered="{! IF(step==1,true,false)}">
+                    <apex:outputLabel value="{!$Label.Quantity_to_split}" />
+                    <apex:inputfield value="{!oppProdList[0].Quantity}" />
+                </apex:pageBlockSectionItem>
+                <br/>
+                <apex:repeat value="{!opportunityLineItemList}" var="row">
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel value="{!$Label.Quantity_to_split}" />
+                        <apex:inputfield value="{!row.Quantity}" />
+                    </apex:pageBlockSectionItem>
+                    <br/>
+                </apex:repeat>
+            </apex:pageBlockSection>
+            <br/>
+            <div class="buttons">
+                <apex:CommandButton value="{!$Label.Next}" action="{!cloneOppProd}" reRender="fr" rendered="{! IF(step==0,true,false)}" />
+                <apex:CommandButton value="{!$Label.Save}" action="{!save}" reRender="fr" rendered="{! IF(step==1,true,false)}" />
+                <apex:CommandButton value="{!$Label.Reset}" reRender="fr" oncomplete="location.reload()" immediate="true" />
+                <apex:CommandButton value="{!$Label.Cancel}" action="{!cancel}" reRender="fr" immediate="true"/>
+            </div>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

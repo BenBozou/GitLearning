@@ -1,0 +1,125 @@
+<apex:page controller="vlocity_cmt.CardCanvasController" docType="html-5.0" applyHtmlTag="true" showHeader="false" sidebar="false" standardStylesheets="false" action="{!CustomerInteraction}" extensions="RTL_Support,GetPrimaryContact,LinkEnvSupport">
+
+	<!--<html xmlns:ng="http://angularjs.org" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="ng-cloak" style="height:100%" dir="{!IF(isLanguageRTL, 'rtl', 'ltr')}" lang="{!currentLang}">-->
+	<html dir="{!IF(isLanguageRTL, 'rtl', 'ltr')}" lang="{!currentLang}">
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta http-equiv="x-ua-compatible" content="IE=edge" />
+		<style type="text/css">
+		body {
+			margin: 0px !important;
+			padding: 0px !important;
+			background: #f9f9f9;
+		}
+
+		</style>
+
+		<apex:stylesheet value="{!IF(isLanguageRTL, URLFOR($Resource.vlocity_rtl, '/assets/styles/salesforce-lightning-design-system-vf.rtl.min.css'), URLFOR($Resource.vlocity_rtl, '/assets/styles/salesforce-lightning-design-system-vf.min.css'))}" />
+		<apex:stylesheet value="{!URLFOR($Resource.vlocity_cmt__vlocity_assets, '/css/vlocity.css')}" />
+		<script type="text/javascript">
+			window.currEnvironmentAllLinks = {!urlLinkList};
+		</script>
+
+		<!-- Salesforce Console API -->
+		<apex:includeScript value="/support/console/38.0/integration.js" />
+		<apex:includeScript value="{!URLFOR($Resource.console_Resources, '/JS/cardLink.js')}" />
+
+	</head>
+
+	<body>
+
+		<div class="vlocity via-slds" ng-app="sidebarApp" ng-controller="sidebarCtrl">
+			<vloc-layout ng-if="layoutName" ctrl="{{injectedController}}" layout-id="{{layoutId}}" layout-name="{{layoutName}}"></vloc-layout>
+		</div>
+
+		<script src="{!URLFOR($Resource.vlocity_cmt__vlocity_assets, '/javascripts/vlocity.js')}"></script>
+		<!--<script src="{!URLFOR($Resource.vlocity_cmt__vlocity_assets, '/bower_components/forceng/forceng.js')}"></script>
+		<script src="{!URLFOR($Resource.vlocity_cmt__vlocity_assets, '/bower_components/ForceTK/forcetk.js')}"></script>-->
+		<script src="{!$Resource.vlocity_cmt__CardFramework_Assets}"></script>
+		<script src="{!$Resource.vlocity_cmt__CardFramework}"></script>
+		<script src="{!$Resource.vlocity_cmt__SldsAngular}"></script>
+
+		<script type="text/javascript">
+			window.currEnvironmentAllLinks = {!urlLinkList};
+			window.primaryContactId = '{!JSENCODE(primaryContactId)}';
+
+
+
+
+		var modules = ['vlocity', 'CardFramework', 'ngSanitize', 'forceng', 'tmh.dynamicLocale', 'cfp.hotkeys', 'sldsangular','forceng'];
+		
+		var sideBarModule = angular.module('sidebarApp', modules);
+
+		sideBarModule.config(['$localizableProvider', function($localizableProvider) {
+			'use strict';
+			$localizableProvider.setLocalizedMap(window.i18n);
+			$localizableProvider.setDebugMode(window.ns === '');
+		}]);
+
+		var nsPrefixDotNotation = "{!nsPrefixDotNotation}";
+
+		sideBarModule.filter('phoneNumber', function() {
+			return function(phoneNumber) {
+				phoneNumber = phoneNumber || '';
+				//Removes all special charaters in phonenumber except numbers and +
+				phoneNumber = phoneNumber.replace(/[^\d\+]/g, "");
+				return phoneNumber;
+			};
+		});
+
+		localStorage.setItem('nsPrefixDotNotation', nsPrefixDotNotation);
+
+		sideBarModule.run(['$sce', '$rootScope', 'force', 'timeStampInSeconds', 'networkService', 'userProfileService', '$log',
+			function ($sce, $rootScope, force, timeStampInSeconds, networkService, userProfileService, $log) {
+				'use strict';
+				$log = $log.getInstance('CardFramework: CardLayoutComponent');
+				force.init({
+					accessToken: '﻿﻿{!$Api.Session_Id}',
+					useProxy: false
+				});
+				$rootScope.forcetkClient = new forcetk.Client();
+				$rootScope.forcetkClient.setSessionToken('﻿﻿{!$Api.Session_Id}');
+				userProfileService.getUserProfile().then(
+					function (data) {
+						console.log('user data ', data)
+						$rootScope.userId = data.userid;
+						$rootScope.userAnLocale = data.anlocale;
+						$rootScope.userSfLocale = data.sflocale;
+						$rootScope.userCurrency = data.money;
+						$rootScope.userLanguage = data.language;
+						$rootScope.userTimeZone = data.timezone;
+						//set the i18n file path based on the user's locale in sfdc
+						//$localizableProvider.set($rootScope.userAnLocale);
+						moment.locale($rootScope.userAnLocale);
+					});
+				$log.debug('nsPrefixDotNotation fetched from CardCanvasController: ' + nsPrefixDotNotation);
+				//$log.debug('externalModules', externalModules);
+				$log.debug('nsPrefixDotNotation value stored in localStorage: ' + localStorage.getItem('nsPrefixDotNotation'));
+			}
+		]);
+
+		sideBarModule.controller('sidebarCtrl', function ($scope, $rootScope, force, dataService, pageService, $log) {
+			'use strict';
+			$log = $log.getInstance('CardFramework: CardLayoutComponent');
+			$scope.accounts = [];
+			$scope.layouts = {};
+			$scope.order = '';
+			$rootScope.layouts = {};
+			//$scope.injectedController = '{controllers}';
+			//$scope.layoutName = pageService.params.layout ? 'Account-console-sidebar' : pageService.params.layout : '{layout}';
+			$scope.layoutName = 'Account-console-sidebar';
+			$scope.layoutId = pageService.params.layoutId;
+			$log.debug('ConsoleCards layoutName: ' + $scope.layoutName);
+			localStorage.setItem('consoleCardsLayoutName', $scope.layoutName);
+			// the following is to Preview layout targeted for community with soql query using loggedUser.AccountId, in ConsoleCards (Universal)
+			/*$rootScope.loggedUser = {
+				'AccountId': pageService.params.Id
+			};*/
+		});
+
+		</script>
+
+	</body>
+
+	</html>
+</apex:page>

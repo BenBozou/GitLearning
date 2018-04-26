@@ -1,0 +1,102 @@
+<apex:page standardStylesheets="false" controller="LinkEnvSupport" showHeader="false" sidebar="false" docType="html-5.0">
+   
+   <html>
+       <head>
+           <meta name="viewport" content="width=device-width, initial-scale=1"/>
+           <meta http-equiv="x-ua-compatible" content="IE=edge" />
+           <style type="text/css">
+                html {
+                    border: solid 1px transparent;
+                    width: 100%;
+                }
+            </style>
+      </head>
+      <body>
+           <!--c:LeadOmniScriptStyle ></c:LeadOmniScriptStyle-->
+            <apex:includeScript value="/support/console/39.0/integration.js"/>
+            <div class="vlocity via-slds via-slds1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" ng-app="{!$CurrentPage.parameters.omniScriptName}">
+               <apex:includeScript value="{!URLFOR($Resource.console_Resources, '/JS/cardLink.js')}"/>
+               <script type="text/javascript">
+                window.currEnvironmentAllLinks={!urlLinkList};
+        		var a = navigator.userAgent;
+                if ((a.indexOf('Salesforce') != -1) && (a.indexOf('iPhone') != -1 || a.indexOf('iPad') != -1) && (a.indexOf('Safari') == -1)) {
+                    var s = document.createElement('style');
+                    s.innerHTML = "html,html body
+                    {overflow:scroll;-webkit-overflow-scrolling:touch;zindex:0;}
+                    body
+                    {position:absolute;left:0;right:0;top:0;bottom:0;}
+                    ";
+                    document.getElementsByTagName('head')0.appendChild(s);
+                }	
+              
+                function closeTab(){
+                    if(sforce.console.isInConsole()){
+                        sforce.console.disableTabClose(false, null, function(){
+                                        sforce.console.getEnclosingPrimaryTabId(function(result){
+                                                        sforce.console.closeTab(result.id);
+                                        });
+           
+                        });
+                    }
+               }
+                
+               function openRecordPage(sObjectID,closeSubtab) {
+                   sforce.console.openPrimaryTab(null, '/'+sObjectID
+                                                 , false, '', (closeSubtab)?openSuccess:'', 'salesforceTab');
+               }
+                var openSuccess = function openSuccess(result) {
+                    //Report whether opening the new tab was successful
+                    if (result.success == true) {
+                        sforce.console.getFocusedPrimaryTabId(function(result2) {
+                            //Now that we have the tab ID, we can close it
+                            var tabId = result2.id;
+                            sforce.console.closeTab(tabId);
+                            sforce.console.focusPrimaryTabById(result.id);
+                        });
+                        //alert('Primary tab successfully opened' + result.id);
+                    } else {
+                        //alert('Primary tab cannot be opened');
+                    }
+                };
+                
+                
+                function lcontext(el){
+                 
+                    var url=getUrl(el.getAttribute('lcUrl'));
+                    var item = {};
+                    item.vlocity_cmt__LinkType__c = el.getAttribute('LinkType');
+                    if(el.getAttribute('externaldata')==''){
+                            postFixUrl = url;
+                    }
+                    else{
+                        var temp = JSON.stringify(eval("(" + el.getAttribute('externaldata') + ")"));
+                        var myobj = JSON.parse(temp);
+                        var postFixUrl= mergeUrl(el.getAttribute('param'),myobj,url);
+                    }
+                   
+                    popUpScreen(item,postFixUrl)
+         
+                }
+                
+                
+
+             </script>
+                   <!--a href="javascript:void(0)" onclick="lcontext('AMDOCS/request.aspx?user_id={0}&app_code=CSM&act_code=80&fu_id={1}','Lic','{\'user_id\':\'025666108\', \'fu_id\':\'200\'}','user_id,fu_id')">LContext</a-->
+                <vlocity_cmt:BusinessProcessComponent strOmniScriptLang="English"
+                    mobile="true"
+                    elementTypeToHTMLTemplateMapping="{'Select':'vlcMobileSelect.html', 'Multi-select': 'vlcMobileSelectItem.html'}"
+                    previewMode="{!$CurrentPage.parameters.previewEmbedded}"
+                    verticalMode="{!$CurrentPage.parameters.verticalMode}"
+                    strOmniScriptId="{!$CurrentPage.parameters.designerPreviewId}"
+                    scriptLayout="lightning"/>
+                <vlocity_cmt:BusinessProcessHelperComponent />
+                <vlocity_cmt:JSONTreeHTMLTemplateComponent />
+                <script type="text/javascript">
+                    var modules = ['vlocity-business-process'];
+                    var myModule = angular.module("{!$CurrentPage.parameters.omniScriptName}", modules);
+                </script>
+            </div>
+            <vlocity_cmt:VFActionFunction /> 
+        </body>
+    </html>
+</apex:page>

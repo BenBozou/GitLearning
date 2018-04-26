@@ -1,0 +1,76 @@
+<apex:page controller="RolesReportController" docType="HTML-5.0" showHeader="false" sidebar="false">
+    <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"> <!-- lang="iw" dir="rtl"-->
+        <head>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        </head>
+        
+        <script>
+            var app = angular.module('MyApp',['ngSanitize']).config(function($locationProvider) {
+                $locationProvider.html5Mode({
+                    enabled: true,
+                    requireBase: false
+                });
+            });
+            app.controller('myController', ['$scope', '$rootScope','$sce', function($scope, $rootScope,$sce) {
+                
+                $scope.remoteActionInit = '{!$RemoteAction.RolesReportController.init}';
+                
+                /*init function*/
+                $scope.init = function() {
+                    Visualforce.remoting.Manager.invokeAction($scope.remoteActionInit, function(result, event) {
+                        $scope.$apply(function() {
+                            $scope.data = result;
+                            // console.log($scope.data);
+                        });
+                    });
+                }
+                
+                $scope.init();
+            }]);
+        </script>
+        
+        <style>
+            thead {
+                background: rgba(158, 158, 158, 0.25);
+            }
+            .theadTd {
+                text-align: center !important;
+                font-weight: bold;
+                color: #6E2C6B !important;
+            }
+            .tbodyTd {
+                text-align: center !important;
+                font-weight: bold;
+            }
+        </style>
+        
+        <apex:slds />
+        <div ng-app="MyApp" class="slds-scope">
+            <div ng-controller="myController">
+                <table ng-if="data" border="0" class="slds-table slds-table--bordered slds-table--cell-buffer">
+                    <thead>
+                        <tr class="slds-text-title--caps">
+                            <td class="theadTd">
+                                {!$Label.RoleCode}
+                            </td>
+                            <td class="theadTd">
+                                {!$Label.RoleName}
+                            </td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="item in data" class="slds-text-title--caps">
+                            <td class="tbodyTd">
+                                {{item.DeveloperName}}
+                            </td>
+                            <td ng-bind-html="item.Name" class="tbodyTd">
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <apex:includeScript value="//ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js" />
+        <script src="{!URLFOR($Resource.console_Resources, '/JS/ngsanitize.js')}"></script>
+        </html>
+</apex:page>

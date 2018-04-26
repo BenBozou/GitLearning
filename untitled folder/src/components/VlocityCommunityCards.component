@@ -1,0 +1,15 @@
+<apex:component controller="VlocityCommunityController">
+    <apex:attribute name="layoutOverride" type="String" required="false" description="Layout for cards to display"/>
+        <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1"/>
+
+
+        </head>
+        <body>
+
+            <vlocity_cmt:CardLayoutComponent layout="{!layoutOverride}" modules="myApp"/>
+
+           
+        </body>
+    
+</apex:component>

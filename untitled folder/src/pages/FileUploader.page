@@ -1,0 +1,34 @@
+<!--
+/**
+*   This page will be invoked from External Attachment new buttom.
+*   Tal Sabati
+*	taskid PLR-501
+*	@module Leads
+*   @submodule FileUploader.page
+*/
+-->
+<apex:page standardController="ExternalAttachment__c" extensions="FileUploaderController">
+  <style>
+      .pageMessage{display: none;}
+  </style>
+  <apex:includeScript value="{!URLFOR($Resource.FileUploader, 'UploadFile.js')}"/>
+  <apex:sectionHeader subtitle="Upload File"/>
+  <apex:form >
+    <apex:outputPanel styleClass="pageMessage">
+        <apex:pageMessage severity="error" strength="1"/>
+    </apex:outputPanel>
+    <apex:pageMessages />
+    <apex:pageBlock >
+      <apex:pageBlockButtons >
+        <apex:commandButton action="{!upload}" value="Save" onclick="return performValidation();"/>
+        <apex:CommandButton value="Cancel" action="{!cancel}"/>
+      </apex:pageBlockButtons>
+      <apex:pageBlockSection showHeader="false" columns="2">
+        <apex:pageBlockSectionItem >
+          <apex:outputLabel value="File: " for="file"/>
+          <apex:inputFile value="{!filebody}" fileSize="{!externalAttachment.Size__c}" filename="{!externalAttachment.Name__c}" styleClass="attachmentFile"/>
+        </apex:pageBlockSectionItem>
+      </apex:pageBlockSection>
+    </apex:pageBlock>
+  </apex:form>
+</apex:page>

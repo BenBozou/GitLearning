@@ -1,0 +1,8 @@
+<apex:page standardStylesheets="false" showHeader="false">
+  
+  <svg>
+
+   <img src="{!URLFOR($Resource.svgTest)}"></img>
+</svg>
+      
+ </apex:page>

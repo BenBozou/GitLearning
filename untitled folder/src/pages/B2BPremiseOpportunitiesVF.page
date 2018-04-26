@@ -1,0 +1,31 @@
+<apex:page standardController="vlocity_cmt__Premises__c" showHeader="false" sidebar="false" extensions="PremiseOpportunityController,LinkEnvSupport">
+    <apex:includeScript value="{!URLFOR($Resource.console_Resources, '/JS/cardLink.js')}" />
+    <apex:includeScript value="/support/console/38.0/integration.js" />
+    <script type="text/javascript">
+        window.currEnvironmentAllLinks = {!urlLinkList};
+        var action = {!action};
+        console.log('ssss:', action);
+        var record = {'displayTaskNumber':''};
+    </script>   
+    <apex:form >
+        <apex:pageblock id="CustomList" title="הזדמנויות מקושרות">
+           <apex:pageBlockTable value="{!oppz}" var="o" rendered="{!NOT(ISNULL(oppz))}">
+                <script type="text/javascript">
+                    var record = {'displayTaskNumber':'{!o.id}'};
+                    console.log('aaaa':, record);
+                </script> 
+                <apex:column headerValue="שם הזדמנות">
+                    <apex:outputLink onclick="performActionNew(action,record)">{!o.Name}</apex:outputLink>
+                </apex:column>
+                <apex:column headerValue="שם חשבון">
+                    <apex:outputLink target="_top" value="/{!o.Account.id}">{!o.Account.Name}</apex:outputLink>
+                </apex:column>
+                <apex:column headerValue="כינוי בעל ההזדמנות" value="{!o.Owner.Alias}"/>
+                <apex:column value="{!o.CreatedDate}"/>
+                <apex:column value="{!o.CloseDate}"/>
+                <apex:column headerValue="סוג רשומת הזדמנות" value="{!o.RecordType.Name}"/>
+           </apex:pageBlockTable>
+           <apex:outputLabel value="אין רשומות להציג" rendered="{!(ISNULL(oppz))}" styleClass="noRowsHeader"></apex:outputLabel>
+         </apex:pageblock>
+    </apex:form>
+</apex:page>

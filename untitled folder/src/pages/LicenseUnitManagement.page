@@ -1,0 +1,145 @@
+<apex:page controller="LicenseUnitManagementController" docType="HTML-5.0">
+    <apex:includeScript value="/support/console/38.0/integration.js"/>
+    <html xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"> <!-- lang="iw" dir="rtl"-->
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    </head>
+    <apex:slds />
+    <script>
+        window.currentUser = '{!$User.Id}';
+        window.messages = ["{!$Label.Save}","{!$Label.SearchLicense}","{!$Label.SuccessLicense}",
+                            "{!$Label.FailedLicense}","{!$Label.NoteLicense}","{!$Label.ErrorUpdateUser}",
+                            "{!$Label.ErrorUpdateSela}","{!$Label.NoteLicense100}","{!$Label.NoUsersToUpdate}","{!$Label.CanUpdateUpTo}","{!$Label.Summary}"];
+        window.fieldSelaSet = [];
+        window.fieldUserSet = [];
+        window.labelSela = [];
+        window.labelUser = [];
+        window.remoteActionInit = '{!$RemoteAction.LicenseUnitManagementController.init}';
+        window.remoreActionSave = '{!$RemoteAction.LicenseUnitManagementController.save}';
+        
+        <!--populate sela set with API names and Labels-->
+        <apex:repeat value="{!$ObjectType.SelaProfile__c.FieldSets.Labels}" var="f" >
+            window.fieldSelaSet.push("{!f}");
+            window.labelSela.push("{!jsencode(f.Label)}"); 
+        </apex:repeat>
+        
+        <!--populate User set with API names and Labels-->
+        <apex:repeat value="{!$ObjectType.User.FieldSets.Labels}" var="f" >
+            window.fieldUserSet.push("{!f}")
+            window.labelUser.push("{!jsencode(f.Label)}"); 
+        </apex:repeat>
+    </script>
+    
+    <apex:includeScript value="/support/console/38.0/integration.js"/>
+    <apex:stylesheet value="{!URLFOR($Resource.License_VF_Resource, 'css/LicenseVF.css')}" /> 
+    <div ng-app="MyApp" class="slds-scope">
+    <div ng-controller="myController">
+        <div class="slds-spinner_container" ng-show="$root.spinner" style="position:fixed">
+            <div role="status" class="slds-spinner slds-spinner--medium slds-spinner--brand">
+                <span class="slds-assistive-text">Loading</span>
+                <div class="slds-spinner__dot-a"></div>
+                <div class="slds-spinner__dot-b"></div>
+            </div>
+        </div>
+        <table ng-if="data" border="0" class="slds-table slds-table--bordered slds-table--cell-buffer">
+            <thead>
+                <tr class="slds-text-title--caps">
+                    <td ng-repeat="field in labelSela" style="text-align:center">
+                        {{field}}
+                    </td>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="item in data['Sela__c'][0].SelaProfiles__r">
+                    <td ng-repeat="field in fieldSelaSet" style="text-align:center">
+                        <span ng-if="field != 'UsedLicenses__c'">{{getField(item, field)}}</span>
+                        <span ng-if="field == 'UsedLicenses__c'" class="{{getField(item, field)>=90 ? 'warning' : ''}}">
+                            {{getField(item, field)}}
+                        </span>
+                    </td>
+                </tr>
+            </tbody>
+            <thead>
+                <tr class="slds-text-title--caps">
+                    <td ng-repeat="field in fieldSelaSet" style="text-align:center" ng-init="item = data['Sela__c'][0]">
+                        <span>{{$index==0 ? 'SUMMARY : ': getField(item, field)}}</span>
+                    </td>
+                </tr>
+            </thead>
+        </table>
+        <br/>
+        <span ng-repeat="item in data['Sela__c'][0].Sela_Roles__r">
+            <span class="slds-badge" ng-bind-html="item.Role_Name__c"></span> 
+        </span>
+        <br/>
+        <div class="saveButton">
+            <button ng-click="save()">
+                    {{messages[0]}}
+            </button>
+        </div>
+        <br/>
+        <div class="slds-notify slds-notify--alert slds-theme--{{messageType}} slds-theme--alert-texture" role="alert" ng-if="message">
+            <h2>
+              {{ message }}
+            </h2>
+        </div>
+        <br/>
+        <div class="slds-form-element">
+            <label class="slds-form-element__label" for="text-input-01" style="font-size: 20px; color: blue">
+                  {{messages[1]}}
+              </label>
+            <div class="slds-form-element__control">
+                <input type="text" id="text-input-01" ng-model="search" class="slds-input" style="width: 15%" />
+            </div>
+        </div>
+        <br/>
+        <br/>
+        <table ng-if="data" border="0" class="slds-table slds-table--bordered slds-table--cell-buffer">
+            <thead>
+                <tr class="slds-text-title--caps">
+                    <td ng-repeat="field in labelUser track by $index">
+                        <div class="slds-grid slds-grid--align-center" ng-init="isExist = (exceptionFieldSet[fieldUserSet[$index]] == true); isShow = (!isExist || (isExist && isPartner))">
+                            <a ng-if="isShow" ng-click="$parent.$parent.sortField = fieldUserSet[$index]; $parent.$parent.sortOrder = !$parent.$parent.sortOrder;">{{field}}</a>
+                        </div>
+                        <span ng-if="fieldUserSet[$index]=='IsActive'" class="slds-grid slds-grid--align-center">
+                                <input type="checkbox" ng-model="selectedall" ng-click="checkAll(selectedall)"/>
+                        </span>
+                    </td>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="item in data['Users'] | filter : search | orderBy : sortField : sortOrder as filteredCollection">
+                    <td ng-repeat="field in fieldUserSet track by $index" class="{{field!='IsActive' ? '' : (getField(item, field)==true ? 'checkGreen' : 'checkRed')}}" style="text-align:center">
+                        <span ng-if="field=='IsActive'">
+                            <input ng-model="item.IsActive" type="checkbox"/>
+                        </span>
+                        <span ng-if="field!=='IsActive'" ng-init="isExist = (exceptionFieldSet[fieldUserSet[$index]] == true)"> 
+                            <span  ng-if = "!isExist" ng-bind-html="getField(item, field) | date : 'dd/MM/yyyy'">
+                                {{ getField(item, field) | date : "dd/MM/yyyy"}}
+                            </span>
+                            <span ng-if="isExist && isPartner == true" ng-bind-html="getField(item, field)">
+                                {{ getField(item, field) }}
+                            </span>
+                        </span>
+                    </td>
+                </tr>
+                <tr ng-hide="true">
+                    <td><span ng-bind="$parent.result = filteredCollection"></span></td>
+                </tr>
+            </tbody>
+        </table>
+        <br/>
+        <br/>
+        <div class="saveButton">
+            <button ng-click="save()">
+                    {{messages[0]}}
+                </button>
+        </div>
+    </div>
+</div>
+<apex:includeScript value="//ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js" />
+<!--<apex:includeScript value="//ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular-sanitize.js" />-->
+<script src="{!URLFOR($Resource.console_Resources, '/JS/ngsanitize.js')}"></script>
+<script src="{!URLFOR($Resource.License_VF_Resource, 'js/LicenseVF.js')}"></script>
+</html>
+</apex:page>

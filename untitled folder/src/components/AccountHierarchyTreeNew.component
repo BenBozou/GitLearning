@@ -1,0 +1,60 @@
+<apex:component layout="none">
+    <apex:attribute name="treeName" type="String" required="true" description="tree name"/>
+    <apex:attribute name="isSort" type="boolean" required="false" default="true" description="sort tree or not"/>
+
+
+    <div id="{!treeName}Tree" style="overflow:hide;width: inherit;"> </div>
+    <script>
+        jsTreeImpl = function(treeName,isSort) {
+            this.tName = treeName;
+            this.tree = jQuery('#' + this.tName + 'Tree');
+            this.isSort = isSort;
+            var that = this;
+
+            var init = function() {
+                var plugins = [ 'types', 'state'];
+                if (!that.isSort) plugins.push('sort');
+                that.tree.jstree({
+                    'types' : {
+                        'root' : {
+                            'icon' : 'glyphicon glyphicon-star'
+                        },
+                        'Business' : {
+                            'icon' : 'glyphicon glyphicon-record'
+                        },
+                        'Consumer' : {
+                            'icon' : 'glyphicon glyphicon-user'
+                        },
+                        'Billing' : {
+                            'icon' : 'glyphicon glyphicon-usd'
+                        },
+
+                    },
+                    'state' : { 'key' : that.tName +'State'},
+                    'sort' :  function (a, b) {
+                            //console.log('sort', this.get_node(a).a_attr.orderIndex, this.get_node(b).a_attr.orderIndex);
+                            return this.get_node(a).a_attr.orderIndex < this.get_node(b).a_attr.orderIndex ? -1 : 1;
+                    },
+                    'plugins' : plugins,
+                    'core' : {
+                        "animation" : 0,
+                        "check_callback" : true,
+                        "multiple" : false,
+                        //"open_parents": true,
+                        "load_open": true,
+                        "data" : null
+                    }
+                });
+
+            }
+
+            this.setTreeData = function(newData){
+                this.tree.jstree(true).settings.core.data = newData;
+                this.tree.jstree(true).refresh();
+                return this.tree;
+            }
+            init();
+        }
+        var jsTree{!treeName} = new jsTreeImpl("{!treeName}",("{!isSort}" == 'false'));
+    </script>
+</apex:component>

@@ -1,0 +1,22 @@
+<apex:component controller="OpportunityProductEditController" allowDML="true">
+<apex:attribute name="oppproduct" type="OpportunityLineItem" required="true" description="OpportunityLineItem" assignTo="{!oppLineItem}"/>
+<apex:attribute name="mode" type="String" required="true" description="view or edit mode" assignTo="{!pageMode}"/>
+    
+     <apex:form >
+        <apex:sectionHeader subtitle="{!oppItemName}" title="Opportunity Product View">    
+        <apex:pageBlock >
+                <apex:pageBlockButtons >
+                    <apex:commandButton id="Save" value="Save" action="{!Save}" />
+                    <apex:commandButton id="Cancel" value="Cancel" action="{!Cancel}" />
+                </apex:pageBlockButtons>                 
+            <apex:pageBlockSection title="{!$Label.General_1}" >
+                    <apex:repeat value="{!General_1}" var="f" id="repgen1">
+                        <apex:inputField value="{!oppLineItem[f.fieldPath]}" id="infmaing1I" required="{!OR(f.required, f.dbrequired)}" rendered="{!inputMode}"/>
+                        <apex:outputField value="{!oppLineItem[f.fieldPath]}" id="infmaing1O" rendered="{NOT !inputMode}" />
+                    </apex:repeat>
+                </apex:pageBlockSection>     
+        </apex:pageBlock>
+        </apex:sectionHeader>
+    </apex:form>
+  
+</apex:component>

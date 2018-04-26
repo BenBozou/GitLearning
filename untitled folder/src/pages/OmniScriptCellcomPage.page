@@ -1,0 +1,191 @@
+<apex:page standardStylesheets="false" controller="LinkEnvSupport" showHeader="{!ShowHeaderSidebar}" sidebar="false" docType="html-5.0" >
+    <apex:includeScript value="/support/console/39.0/integration.js"/>
+    <apex:includeScript value="/soap/ajax/33.0/connection.js" />
+    <div class="vlocity via-slds via-slds1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" ng-app="{!$CurrentPage.parameters.omniScriptName}">
+       <apex:includeScript value="{!URLFOR($Resource.console_Resources, '/JS/cardLink.js')}"/>
+       <apex:includeScript value="{!URLFOR($Resource.jquery, 'jquery.min.js')}"/>
+        <style type="text/css">
+       
+        html {
+            border: solid 1px transparent;
+            width: 100%;
+        }
+         
+        // Center lookup fields text only for Mobile devices
+        @media only screen 
+          and (min-device-width: 320px) 
+          and (max-device-width: 667px) 
+          and (-webkit-min-device-pixel-ratio: 2) { 
+
+            .via-slds .vlc-slds-lookup-control ul li {
+                
+                text-align: center;
+            }
+            
+            .via-slds .vlc-slds-block label[vlc-slds-toggle=toggle]~div[vlc-slds-toggle-elem=visible] {
+                padding-left: 0px;
+            }
+         } 
+         
+         .vlc-slds-bpTree-step-chart__container {
+
+             margin-bottom: 0px !important;
+        }
+        .via-slds input.slds-input[type="text"]{
+            unicode-bidi: embed 
+        }
+
+        .via-slds .slds-textarea{
+          unicode-bidi: embed;
+        }
+
+        .datepickers-container{
+             z-index: 9900;
+             position:absolute !important;
+        }
+
+        /* Removing Steps panel from Omniscript */
+        @media(min-width: 62.5em) {
+            .via-slds .vlc-slds-right--panel {
+                display: none;
+            }
+        }
+        .via-slds .vlc-slds-container--grippy {
+            display: none;
+        }
+
+        </style>
+         
+        <script type="text/javascript">
+        
+        window.currEnvironmentAllLinks={!urlLinkList};
+        
+            var a = navigator.userAgent;
+            if ((a.indexOf('iPhone') != -1 || a.indexOf('iPad') != -1) && (a.indexOf('OS') != -1)) {
+                var s = document.createElement('style');
+                s.innerHTML = "html,html body {overflow:scroll;-webkit-overflow-scrolling:touch;zindex:0;} body {position:absolute;left:0;right:0;top:0;bottom:0;}";
+                var theHead = document.getElementsByTagName('head');
+                document.getElementsByTagName('head')[0].appendChild(s);
+            }
+        
+        function closeTab(){
+            if(sforce.console.isInConsole()){
+                sforce.console.disableTabClose(false, null, function(){
+                    sforce.console.getEnclosingPrimaryTabId(function(result){
+                            sforce.console.closeTab(result.id);
+                        });
+                  });
+            }
+            else {
+                var baseUrl = '{!$Site.CurrentSiteUrl}';
+                console.log('inside close tab');
+                window.location = baseUrl + 'home/home.jsp';
+            }
+        }
+        
+       function OpenAccount(accountID){
+            if(sforce.console.isInConsole()){
+               openRecordPage(accountID,true)
+            }
+            
+            else {
+                var baseUrl = '{!$Site.CurrentSiteUrl}';
+                console.log('inside OpenAccount tab');
+                window.open(baseUrl + accountID, '_blank');
+                //window.location = baseUrl + 'home/home.jsp';
+            }
+        }
+      
+        function openRecordPage(sObjectID,closeSubtab) {
+           sforce.console.openPrimaryTab(null, '/'+sObjectID
+                                         , false, '', (closeSubtab)?openSuccess:'', 'salesforceTab');
+                                         
+        }
+        var openSuccess = function openSuccess(result) {
+            //Report whether opening the new tab was successful
+            if (result.success == true) {
+                sforce.console.getFocusedPrimaryTabId(function(result2) {
+                    var tabId = result2.id;
+                  // sforce.console.closeTab(tabId);
+                   sforce.console.focusPrimaryTabById(result.id);
+                });
+            } 
+        };
+        
+        function lcontext(el){
+         
+            var url=getUrl(el.getAttribute('lcUrl'));
+            var item = {};
+            item.vlocity_cmt__LinkType__c = el.getAttribute('LinkType');
+            if(el.getAttribute('externaldata')==''){
+                    postFixUrl = url;
+            }
+            else{
+                var temp = JSON.stringify(eval("(" + el.getAttribute('externaldata') + ")"));
+                var myobj = JSON.parse(temp);
+                var postFixUrl= mergeUrl(el.getAttribute('param'),myobj,url);
+            }
+               popUpScreen(item,postFixUrl)
+        }
+        
+        function getNextLeadFireEvent() { 
+            sforce.console.fireEvent('GetNextLeadFromOmniScript', '');
+        }
+        
+        
+         $(document).ready(function(){
+        setTimeout(
+          function() {
+            $('#FutureConnectionDate').focusin(function() {
+                
+                $(".datepicker--button").text('נקה');
+            });
+            
+             $('#CallOptionCustom').focusin(function() {
+                
+                (function(){
+                'use strict';
+                var dModule = angular.module('vlocity-business-process');
+                dModule.run((function(){
+                    /*jshint -W030 */
+                    $ && $.fn.datepicker && (function(){
+                        $.fn.datepicker.language['hb'] =  {
+                            days: [ "ראשון","שני","שלישי","רביעי","חמישי","שישי","שבת" ],
+                            daysShort: [ "א'","ב'","ג'","ד'","ה'","ו'","שבת" ],
+                            daysMin: [ "א'","ב'","ג'","ד'","ה'","ו'","שבת" ],
+                            months: [ "ינואר","פברואר","מרץ","אפריל","מאי","יוני",
+                                      "יולי","אוגוסט","ספטמבר","אוקטובר","נובמבר","דצמבר" ],
+                            monthsShort: [ "ינו","פבר","מרץ","אפר","מאי","יוני",
+                                           "יולי","אוג","ספט","אוק","נוב","דצמ" ],
+                            today:'היום',
+                            clear:'נקה',
+                            dateFormat: 'dd/mm/yy',
+                            timeFormat: 'hh:ii aa',
+                            added: 'true',
+                            firstDay: 0
+                        };
+                    }());
+                })());
+            }());
+                
+            });
+            
+          }, 3200);     
+        });
+        
+     </script>
+      
+        <vlocity_cmt:BusinessProcessComponent strOmniScriptLang="English"
+            previewMode="{!$CurrentPage.parameters.previewEmbedded}"
+            verticalMode="{!$CurrentPage.parameters.verticalMode}"
+            strOmniScriptId="{!$CurrentPage.parameters.designerPreviewId}"
+            scriptLayout="lightning"/>
+        <vlocity_cmt:BusinessProcessHelperComponent />
+        <vlocity_cmt:JSONTreeHTMLTemplateComponent />
+        <script type="text/javascript">
+            var modules = ['vlocity-business-process'];
+            var myModule = angular.module("{!$CurrentPage.parameters.omniScriptName}", modules);
+        </script>
+    </div>
+    <vlocity_cmt:VFActionFunction /> 
+</apex:page>

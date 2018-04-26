@@ -1,0 +1,107 @@
+<apex:page standardStylesheets="false" standardController="Lead" extensions="LinkEnvSupport" showHeader="false" sidebar="false" docType="html-5.0">
+
+<style>
+    
+    .LeadPinkDetails {
+        color: #d10074;
+        font-size: 10px;
+        font-family: Arial,sans-serif;
+    }
+    
+    .padded,
+    .slds-scope .slds-col--padded,
+    .slds-scope .slds-page-header {
+        padding:2rem;
+        padding-right:2rem;
+    }
+    
+    .textDirectionRTL {
+        direction:rtl;
+    }
+    .slds-scope .slds-page-header {
+        background:#fff;
+        border-bottom: none;
+        color:#00396b;
+    }
+    
+     .slds-scope .slds-page-header:after{
+         display: block;
+         width: 100%;
+         min-height: .1rem;
+         height: .1rem;
+         content: " ";
+         background: linear-gradient(-141deg,#05a6df,#1fc8db 51%,#50e3c2 75%);
+     }
+     
+     .slds-scope .slds-truncate {
+         font-size:x-large;
+         padding-bottom:2rem;
+     }
+     .LeadBlackDetails {
+         font-size: 1em;
+         color: #404040;
+         font-family: Arial,sans-serif;
+     }
+     
+     .paddedBottom {
+         padding-bottom: .65rem;
+     }
+     
+     .followUpLead {
+        background: #FDC82F;
+        border: none;
+        border-radius: 10px;
+        font-size: 0.75rem;
+        padding: 0.75rem;
+        font-weight: bold;
+        width:10%;
+     }
+     
+     
+</style>
+
+<apex:slds >
+    
+    <div class="{!IF(isLanguageRTL, 'textDirectionRTL', 'textDirectionRTL')}"> 
+    <div class="slds-page-header vlc-slds-page--header">
+     <h1 class="slds-page-header__title vlc-slds-page-header__title slds-truncate">
+        הצעה חדשה ללקוח
+    </h1>   
+    </div>
+    
+    <apex:outputpanel rendered="{!Lead.Status  == 'LST05'}"> 
+    <div class="followUpLead">
+         שיחה חוזרת ללקוח
+    </div>
+    </apex:outputpanel>
+    
+    <div class="slds-col--padded slds-size--1-of-1 padded"> 
+     <div class="slds-form-element__control paddedBottom">
+        <div class="LeadPinkDetails">
+            {!$Label.Approach_Lead_By_First_Name}
+        </div>
+        <div class="LeadBlackDetails">
+            שלום   {!Lead.FirstName} {!Lead.LastName} 
+        </div>
+     </div>
+     <div class="slds-form-element__control paddedBottom">
+        <div class="LeadPinkDetails">
+            {!$Label.Lead_Details}
+        </div>
+        <div class="LeadBlackDetails">
+            עבור לקוח:  {!Lead.Phone}
+        </div>
+     </div>
+    </div>
+    
+    <apex:form >
+    <div class="slds-form-element">
+        <apex:inputField value="{!Lead.Status}" styleclass="slds-form-element__control"/>
+    </div>
+    </apex:form>
+    
+    </div>
+</apex:slds>
+
+
+</apex:page>

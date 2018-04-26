@@ -1,0 +1,392 @@
+<apex:page controller="ManagerScreenControler" tabstyle="Contact">
+    <head>
+        <apex:includescript value="//code.jquery.com/jquery-1.12.3.js" / >
+    <style>
+        .iconImg{
+            width: 20px;
+        }
+        .theForm{
+            direction: rtl !important;
+        }
+        .bPageBlock .dataCol {
+           text-align: right !important;
+        }
+        .bPageBlock .detailList .labelCol {
+            width: 7% !important;
+        }
+        th {
+           text-align: right;
+        }
+    </style>
+    <script>
+        $(window).load(function(){
+            document.getElementById("userDisplay").innerHTML = "Roey Benami";
+            showSubUsers();
+            updateRecordsAmount();
+
+            $("#roleChoice").change(function() {
+                var parent = $(this).val();
+                 switch(parent){
+                    case "moked":
+                         document.getElementById("userDisplay").innerHTML = "Roey Benami";
+                         showSubUsers();
+                         updateRecordsAmount();
+                         break;
+                    case 'mokedService':
+                        document.getElementById("userDisplay").innerHTML = "Yaniv Gabay";
+                        showSubUsers();
+                        updateRecordsAmount();
+                        break;
+                    case 'supportStaff':
+                        document.getElementById("userDisplay").innerHTML = "Tal Sabati";
+                        showSubUsers();
+                        updateRecordsAmount();
+                        break;
+                    case 'welcome':
+                        document.getElementById("userDisplay").innerHTML = "Eliran Shalom";
+                        showSubUsers();
+                        updateRecordsAmount();
+                        break;
+                    }
+            });
+
+            $(".dividedEqualyButton").click(function() {
+               divsToDisabled = getUserDisplayRecordsAmount();
+               var totalAmount = 100000;
+               var numberofUsers = 0;
+               for(var i = 0; i < divsToDisabled.length; i++){
+                   if(divsToDisabled[i].disabled != true){
+                       numberofUsers++;
+                   }
+               }
+               for(var i = 0; i < divsToDisabled.length; i++){
+                   if(divsToDisabled[i].disabled != true){
+                       divsToDisabled[i].value = Intl.NumberFormat().format(Number(totalAmount) / Number(numberofUsers));
+                   }
+               }
+               calculatRemainsDivided();
+            });
+            $(".resetButton").click(function() {
+               divsToDisabled = getUserDisplayRecordsAmount();
+               for(var i = 0; i < divsToDisabled.length; i++){
+                   divsToDisabled[i].value = 0;
+               }
+               document.getElementsByClassName("remainsDivided")[0].innerHTML = Intl.NumberFormat().format(100000);
+            });
+      });
+       function showSubUsers(){
+            var minusimage = document.getElementsByClassName('minusimage');
+            for(var i = 0; i < minusimage.length; i++)
+                minusimage[i].style.display = 'none';
+            var plusimage = document.getElementsByClassName('plusimage');
+            for(var i = 0; i < plusimage.length; i++)
+                plusimage[i].style.display = '';
+
+            var userDisplay = document.getElementById("userDisplay").innerHTML;
+
+            var roeySubRole = document.getElementsByClassName("roeySubRole");
+            var yanivSubRole = document.getElementsByClassName("yanivSubRole");
+            var eliranSubRole  = document.getElementsByClassName("eliranSubRole ");
+            var talSubRole = document.getElementsByClassName("talSubRole");
+
+            for(var i = 0; i < roeySubRole.length; i++)
+               roeySubRole[i].style.display = 'none';
+            for(var i = 0; i < yanivSubRole.length; i++)
+               yanivSubRole[i].style.display = 'none';
+            for(var i = 0; i < eliranSubRole.length; i++)
+               eliranSubRole[i].style.display = 'none';
+            for(var i = 0; i < talSubRole.length; i++)
+               talSubRole[i].style.display = 'none';
+
+            if(userDisplay === 'Roey Benami')
+                for(var i = 0; i < roeySubRole.length; i++)
+                   roeySubRole[i].style.display = '';
+
+            else if(userDisplay === 'Yaniv Gabay')
+               for(var i = 0; i < yanivSubRole.length; i++)
+                   yanivSubRole[i].style.display = '';
+
+            else if(userDisplay === 'Tal Sabati')
+                for(var i = 0; i < talSubRole.length; i++)
+                   talSubRole[i].style.display = '';
+
+            else if(userDisplay === 'Eliran Shalom')
+                for(var i = 0; i < eliranSubRole.length; i++)
+                   eliranSubRole[i].style.display = '';
+       }
+       function updateRecordsAmount() {
+           disabledRecordsAmount();
+           cancelRecordsAmount();
+           resetRecordsAmount();
+           calculatRemainsDivided();
+        }
+        function disabledRecordsAmount() {
+           var divsToDisabled  = document.getElementsByClassName("recordsAmount");
+           for(var i = 0; i < divsToDisabled.length; i++){
+               divsToDisabled[i].disabled = true;
+           }
+        }
+        function cancelRecordsAmount() {
+           for(var j = 1; j < 7; j++){
+               var inputCheck = document.getElementsByClassName('inputCheck' + j);
+               if(inputCheck[0].checked){
+                   for(var i = 1; i < inputCheck.length; i++){
+                       if(inputCheck[i].checked){
+                           document.getElementsByClassName("recordsAmount")[i-1].disabled = false;
+                       }
+                   }
+               }
+           }
+        }
+
+        function resetRecordsAmount() {
+           divsToDisabled = getUserDisplayRecordsAmount();
+           for(var i = 0; i < divsToDisabled.length; i++){
+               if(divsToDisabled[i].disabled){
+                   divsToDisabled[i].value = 0;
+               }
+           }
+        }
+        function calculatRemainsDivided() {
+           divsToDisabled = getUserDisplayRecordsAmount();
+           var totalDivided = 0;
+           var totalAmount = 100000;
+           for(var i = 0; i < divsToDisabled.length; i++){
+               var temp = divsToDisabled[i].value;
+               temp = parseInt(temp.replace(/,/g,""));
+               totalDivided += temp ;
+           }
+           document.getElementsByClassName("remainsDivided")[0].innerHTML = Intl.NumberFormat().format(Number(totalAmount) - Number(totalDivided));
+        }
+        function getUserDisplayRecordsAmount(){
+            var userDisplay = document.getElementById("userDisplay").innerHTML;
+            if(userDisplay === 'Roey Benami')
+               return document.getElementsByClassName("roeySubRoleRecordsAmount");
+            else if(userDisplay === 'Yaniv Gabay')
+               return document.getElementsByClassName("yanivSubRoleRecordsAmount");
+            else if(userDisplay === 'Tal Sabati')
+               return document.getElementsByClassName("talSubRoleRecordsAmount");
+            else if(userDisplay === 'Eliran Shalom')
+               return document.getElementsByClassName("eliranSubRoleRecordsAmount");
+        }
+        function switchMenu(obj,obj1,obj2) {
+            if(obj2 == 'yanivSubRole' ){
+                var minusimage = document.getElementsByClassName('minusimage');
+                for(var i = 1; i < minusimage.length; i++)
+                    minusimage[i].style.display = 'none';
+                var plusimage = document.getElementsByClassName('plusimage');
+                for(var i = 1; i < plusimage.length; i++)
+                    plusimage[i].style.display = '';
+            }
+
+            var e1 = document.getElementById(obj);
+            if ( e1.style.display != 'none' ) {
+                e1.style.display = 'none';
+            }
+            else {
+                e1.style.display = '';
+            }
+            var e2 = document.getElementById(obj1);
+            if ( e2.style.display != 'none' ) {
+                e2.style.display = 'none';
+            }
+            else {
+                e2.style.display = '';
+            }
+            var e3 = document.getElementsByClassName(obj2);
+            for(var i = 0; i < e3.length; i++){
+                if (e1.style.display != 'none') {
+                    if(obj2 == 'yanivSubRole' ){
+                        var e4 = document.getElementsByClassName('talSubRole');
+                        for(var j = 0; j < e4.length; j++){
+                            e4[j].style.display = 'none';
+                        }
+                        e4 = document.getElementsByClassName('eliranSubRole');
+                        for(var j = 0; j < e4.length; j++){
+                            e4[j].style.display = 'none';
+                        }
+                    }
+                    e3[i].style.display = 'none';
+                }
+                else {
+                    e3[i].style.display = '';
+                }
+            }
+        }
+    </script>
+    </head>
+    <apex:form styleClass="theForm">
+         <apex:pageBlock title="Hello {!$User.FirstName}!">
+            <apex:pageMessages />
+            <apex:pageBlockButtons location="bottom">
+                <apex:commandButton value="שמור"/>
+                <apex:commandButton value="ביטול"/>
+            </apex:pageBlockButtons><br/>
+            <apex:PageblockSection collapsible="false">
+                תפקיד:
+                <select id="roleChoice">
+                  <option value="moked">מוקדים</option>
+                  <option value="mokedService">מוקד שירות קבוצת סלקום</option>
+                  <option value="supportStaff">צוות תמיכה מוקד שירות קבוצת סלקום</option>
+                  <option value="welcome">מנהל צוות Welcome1 קבוצת סלקום   </option>
+                </select>
+                <br/><br/>
+                מנהל: <span id="userDisplay"></span>
+            </apex:PageblockSection>
+
+            <table style="width: 100% !important;">
+                <thead>
+                    <tr>
+                        <th style="width: 15% !important;">TV</th>
+                        <th style="width: 15% !important;">ISP</th>
+                        <th style="width: 15% !important;">שוק סיטונאי</th>
+                        <th style="width: 15% !important;">Mobile</th>
+                        <th style="width: 15% !important;">חם/קר</th>
+                        <th style="width: 15% !important;">פוטנציאל קיים</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <apex:inputField value="{!CurrentUser.Users_Assignment__r[0].TV__c}" styleClass="inputCheck1" onchange="updateRecordsAmount()"/>
+                        </td>
+                        <td>
+                            <apex:inputField value="{!CurrentUser.Users_Assignment__r[0].ISP__c}" styleClass="inputCheck2" onchange="updateRecordsAmount()"/>
+                        </td>
+                        <td>
+                            <apex:inputField value="{!CurrentUser.Users_Assignment__r[0].Wholesale_Market__c}" styleClass="inputCheck3" onchange="updateRecordsAmount()"/>
+                        </td>
+                        <td>
+                            <apex:inputField value="{!CurrentUser.Users_Assignment__r[0].Mobile__c}" styleClass="inputCheck4" onchange="updateRecordsAmount()"/>
+                        </td>
+                        <td>
+                            <apex:inputField value="{!CurrentUser.Users_Assignment__r[0].HotCold__c}" styleClass="inputCheck5" onchange="updateRecordsAmount()"/>
+                        </td>
+                        <td>
+                            <apex:inputField value="{!CurrentUser.Users_Assignment__r[0].Potential__c}" styleClass="inputCheck6" onchange="updateRecordsAmount()"/>
+                        </td>
+                        <apex:outputpanel id="inlinetablesec" style="display:none;"/>
+                    </tr>
+                </tbody>
+            </table>
+
+            <apex:PageblockSection title="משתמשים להקצאה" collapsible="false">
+                <apex:outputField label="כמות לחלוקה" value="{!CurrentUser.Users_Assignment__r[0].Records_Amount__c}" styleClass="totalAmount"/>
+                <apex:outputText label="נשאר לחלק" value="{!remainsDivided}" styleClass="remainsDivided"/>
+                <apex:commandButton value="חלק באופן שווה" styleClass="dividedEqualyButton" reRender="false"/>
+                <apex:commandButton value="איפוס" styleClass="resetButton" reRender="false"/>
+                </apex:PageblockSection>
+                     <table style="width: 100% !important;">
+                        <thead>
+                            <tr>
+                                <th style="width: 5% !important;"></th>
+                                <th style="width: 12% !important;">שם</th>
+                                <th style="width: 20% !important;">תפקיד</th>
+                                <th style="width: 8% !important;">TV</th>
+                                <th style="width: 8% !important;">ISP</th>
+                                <th style="width: 8% !important;">שוק סיטונאי</th>
+                                <th style="width: 8% !important;">Mobile</th>
+                                <th style="width: 8% !important;">חם/קר</th>
+                                <th style="width: 8% !important;">פוטנציאל קיים</th>
+                                <th style="width: 15% !important;">כמות</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="roeySubRole">
+                                <td>
+                                    <apex:outputpanel id="plusimage1" styleClass="plusimage"><apex:image styleClass="iconImg" url="http://findicons.com/files/icons/1964/colorcons_green/128/plus.png" onclick="switchMenu('{!$Component.plusimage1}','{!$Component.minusimage1}','yanivSubRole')"/> </apex:outputpanel>
+                                    <apex:outputpanel id="minusimage1" styleClass="minusimage" style="display:none;"><apex:image styleClass="iconImg" url="http://findicons.com/files/icons/1964/colorcons_green/128/minus.png" onclick="switchMenu('{!$Component.plusimage1}','{!$Component.minusimage1}','yanivSubRole')"/> </apex:outputpanel>
+                                </td>
+                                <td>Yaniv Gabay</td>
+                                <td>מוקד שירות קבוצת סלקום</td>
+                                <td><apex:inputField value="{!CurrentUser.Users_Assignment__r[0].TV__c}" styleClass="inputCheck1" onchange="updateRecordsAmount()"/></td>
+                                <td><apex:inputField value="{!CurrentUser.Users_Assignment__r[0].ISP__c}" styleClass="inputCheck2" onchange="updateRecordsAmount()"/></td>
+                                <td><apex:inputField value="{!CurrentUser.Users_Assignment__r[0].Wholesale_Market__c}" styleClass="inputCheck3" onchange="updateRecordsAmount()"/></td>
+                                <td><apex:inputField value="{!CurrentUser.Users_Assignment__r[0].Mobile__c}" styleClass="inputCheck4" onchange="updateRecordsAmount()"/></td>
+                                <td><apex:inputField value="{!CurrentUser.Users_Assignment__r[0].HotCold__c}" styleClass="inputCheck5" onchange="updateRecordsAmount()"/></td>
+                                <td><apex:inputField value="{!CurrentUser.Users_Assignment__r[0].Potential__c}" styleClass="inputCheck6" onchange="updateRecordsAmount()"/></td>
+                                <td><apex:inputField value="{!CurrentUser.Users_Assignment__r[0].Records_Amount__c}" styleClass="recordsAmount roeySubRoleRecordsAmount" onchange="calculatRemainsDivided()"/></td>
+                            </tr>
+                            <tr class="yanivSubRole" style="display:none;">
+                                <td>
+                                    <apex:outputpanel id="plusimage2" styleClass="plusimage"><apex:image styleClass="iconImg" url="http://findicons.com/files/icons/1964/colorcons_green/128/plus.png" onclick="switchMenu('{!$Component.plusimage2}','{!$Component.minusimage2}','eliranSubRole')"/> </apex:outputpanel>
+                                    <apex:outputpanel id="minusimage2" styleClass="minusimage" style="display:none;"><apex:image styleClass="iconImg" url="http://findicons.com/files/icons/1964/colorcons_green/128/minus.png" onclick="switchMenu('{!$Component.plusimage2}','{!$Component.minusimage2}','eliranSubRole')"/> </apex:outputpanel>
+                                </td>
+                                <td>Eliran Shalom</td>
+                                <td>מנהל צוות Welcome1 קבוצת סלקום </td>
+                                <td><apex:inputField value="{!CurrentUser.Users_Assignment__r[0].TV__c}" styleClass="inputCheck1" onchange="updateRecordsAmount()"/></td>
+                                <td><apex:inputField value="{!CurrentUser.Users_Assignment__r[0].ISP__c}" styleClass="inputCheck2" onchange="updateRecordsAmount()"/></td>
+                                <td><apex:inputField value="{!CurrentUser.Users_Assignment__r[0].Wholesale_Market__c}" styleClass="inputCheck3" onchange="updateRecordsAmount()"/></td>
+                                <td><apex:inputField value="{!CurrentUser.Users_Assignment__r[0].Mobile__c}" styleClass="inputCheck4" onchange="updateRecordsAmount()"/></td>
+                                <td><apex:inputField value="{!CurrentUser.Users_Assignment__r[0].HotCold__c}" styleClass="inputCheck5" onchange="updateRecordsAmount()"/></td>
+                                <td><apex:inputField value="{!CurrentUser.Users_Assignment__r[0].Potential__c}" styleClass="inputCheck6" onchange="updateRecordsAmount()"/></td>
+                                <td><apex:inputField value="{!CurrentUser.Users_Assignment__r[0].Records_Amount__c}" styleClass="recordsAmount yanivSubRoleRecordsAmount" onchange="calculatRemainsDivided()"/></td>
+                            </tr>
+                            <tr class="eliranSubRole" style="display:none;">
+                                <td></td>
+                                <td>Lilach Iflach</td>
+                                <td>נציג קבוצת welcome</td>
+                                <td><apex:inputField value="{!CurrentUser.Users_Assignment__r[0].TV__c}" styleClass="inputCheck1" onchange="updateRecordsAmount()"/></td>
+                                <td><apex:inputField value="{!CurrentUser.Users_Assignment__r[0].ISP__c}" styleClass="inputCheck2" onchange="updateRecordsAmount()"/></td>
+                                <td><apex:inputField value="{!CurrentUser.Users_Assignment__r[0].Wholesale_Market__c}" styleClass="inputCheck3" onchange="updateRecordsAmount()"/></td>
+                                <td><apex:inputField value="{!CurrentUser.Users_Assignment__r[0].Mobile__c}" styleClass="inputCheck4" onchange="updateRecordsAmount()"/></td>
+                                <td><apex:inputField value="{!CurrentUser.Users_Assignment__r[0].HotCold__c}" styleClass="inputCheck5" onchange="updateRecordsAmount()"/></td>
+                                <td><apex:inputField value="{!CurrentUser.Users_Assignment__r[0].Potential__c}" styleClass="inputCheck6" onchange="updateRecordsAmount()"/></td>
+                                <td><apex:inputField value="{!CurrentUser.Users_Assignment__r[0].Records_Amount__c}" styleClass="recordsAmount eliranSubRoleRecordsAmount" onchange="calculatRemainsDivided()"/></td>
+                            </tr>
+                            <tr class="eliranSubRole" style="display:none;">
+                                <td></td>
+                                <td>Mohamad Garrah</td>
+                                <td>נציג קבוצת welcome</td>
+                                <td><apex:inputField value="{!CurrentUser.Users_Assignment__r[0].TV__c}" styleClass="inputCheck1" onchange="updateRecordsAmount()"/></td>
+                                <td><apex:inputField value="{!CurrentUser.Users_Assignment__r[0].ISP__c}" styleClass="inputCheck2" onchange="updateRecordsAmount()"/></td>
+                                <td><apex:inputField value="{!CurrentUser.Users_Assignment__r[0].Wholesale_Market__c}" styleClass="inputCheck3" onchange="updateRecordsAmount()"/></td>
+                                <td><apex:inputField value="{!CurrentUser.Users_Assignment__r[0].Mobile__c}" styleClass="inputCheck4" onchange="updateRecordsAmount()"/></td>
+                                <td><apex:inputField value="{!CurrentUser.Users_Assignment__r[0].HotCold__c}" styleClass="inputCheck5" onchange="updateRecordsAmount()"/></td>
+                                <td><apex:inputField value="{!CurrentUser.Users_Assignment__r[0].Potential__c}" styleClass="inputCheck6" onchange="updateRecordsAmount()"/></td>
+                                <td><apex:inputField value="{!CurrentUser.Users_Assignment__r[0].Records_Amount__c}" styleClass="recordsAmount eliranSubRoleRecordsAmount" onchange="calculatRemainsDivided()"/></td>
+                            </tr>
+                            <tr class="yanivSubRole" style="display:none;">
+                                <td>
+                                    <apex:outputpanel id="plusimage3" styleClass="plusimage"><apex:image styleClass="iconImg" url="http://findicons.com/files/icons/1964/colorcons_green/128/plus.png" onclick="switchMenu('{!$Component.plusimage3}','{!$Component.minusimage3}','talSubRole')"/> </apex:outputpanel>
+                                    <apex:outputpanel id="minusimage3" styleClass="minusimage" style="display:none;"><apex:image styleClass="iconImg" url="http://findicons.com/files/icons/1964/colorcons_green/128/minus.png" onclick="switchMenu('{!$Component.plusimage3}','{!$Component.minusimage3}','talSubRole')"/> </apex:outputpanel>
+                                </td>
+                                <td>Tal Sabati</td>
+                                <td>צוות תמיכה מוקד שירות קבוצת סלקום</td>
+                                <td><apex:inputField value="{!CurrentUser.Users_Assignment__r[0].TV__c}" styleClass="inputCheck1" onchange="updateRecordsAmount()"/></td>
+                                <td><apex:inputField value="{!CurrentUser.Users_Assignment__r[0].ISP__c}" styleClass="inputCheck2" onchange="updateRecordsAmount()"/></td>
+                                <td><apex:inputField value="{!CurrentUser.Users_Assignment__r[0].Wholesale_Market__c}" styleClass="inputCheck3" onchange="updateRecordsAmount()"/></td>
+                                <td><apex:inputField value="{!CurrentUser.Users_Assignment__r[0].Mobile__c}" styleClass="inputCheck4" onchange="updateRecordsAmount()"/></td>
+                                <td><apex:inputField value="{!CurrentUser.Users_Assignment__r[0].HotCold__c}" styleClass="inputCheck5" onchange="updateRecordsAmount()"/></td>
+                                <td><apex:inputField value="{!CurrentUser.Users_Assignment__r[0].Potential__c}" styleClass="inputCheck6" onchange="updateRecordsAmount()"/></td>
+                                <td><apex:inputField value="{!CurrentUser.Users_Assignment__r[0].Records_Amount__c}" styleClass="recordsAmount yanivSubRoleRecordsAmount" onchange="calculatRemainsDivided()"/></td>
+                            </tr>
+                            <tr class="talSubRole" style="display:none;">
+                                <td></td>
+                                <td>Eric Fishman</td>
+                                <td>נציג</td>
+                                <td><apex:inputField value="{!CurrentUser.Users_Assignment__r[0].TV__c}" styleClass="inputCheck1" onchange="updateRecordsAmount()"/></td>
+                                <td><apex:inputField value="{!CurrentUser.Users_Assignment__r[0].ISP__c}" styleClass="inputCheck2" onchange="updateRecordsAmount()"/></td>
+                                <td><apex:inputField value="{!CurrentUser.Users_Assignment__r[0].Wholesale_Market__c}" styleClass="inputCheck3" onchange="updateRecordsAmount()"/></td>
+                                <td><apex:inputField value="{!CurrentUser.Users_Assignment__r[0].Mobile__c}" styleClass="inputCheck4" onchange="updateRecordsAmount()"/></td>
+                                <td><apex:inputField value="{!CurrentUser.Users_Assignment__r[0].HotCold__c}" styleClass="inputCheck5" onchange="updateRecordsAmount()"/></td>
+                                <td><apex:inputField value="{!CurrentUser.Users_Assignment__r[0].Potential__c}" styleClass="inputCheck6" onchange="updateRecordsAmount()"/></td>
+                                <td><apex:inputField value="{!CurrentUser.Users_Assignment__r[0].Records_Amount__c}" styleClass="recordsAmount talSubRoleRecordsAmount" onchange="calculatRemainsDivided()"/></td>
+                            </tr>
+                            <tr class="talSubRole" style="display:none;">
+                                <td></td>
+                                <td>Roee Alon</td>
+                                <td>נציג</td>
+                                <td><apex:inputField value="{!CurrentUser.Users_Assignment__r[0].TV__c}" styleClass="inputCheck1" onchange="updateRecordsAmount()"/></td>
+                                <td><apex:inputField value="{!CurrentUser.Users_Assignment__r[0].ISP__c}" styleClass="inputCheck2" onchange="updateRecordsAmount()"/></td>
+                                <td><apex:inputField value="{!CurrentUser.Users_Assignment__r[0].Wholesale_Market__c}" styleClass="inputCheck3" onchange="updateRecordsAmount()"/></td>
+                                <td><apex:inputField value="{!CurrentUser.Users_Assignment__r[0].Mobile__c}" styleClass="inputCheck4" onchange="updateRecordsAmount()"/></td>
+                                <td><apex:inputField value="{!CurrentUser.Users_Assignment__r[0].HotCold__c}" styleClass="inputCheck5" onchange="updateRecordsAmount()"/></td>
+                                <td><apex:inputField value="{!CurrentUser.Users_Assignment__r[0].Potential__c}" styleClass="inputCheck6" onchange="updateRecordsAmount()"/></td>
+                                <td><apex:inputField value="{!CurrentUser.Users_Assignment__r[0].Records_Amount__c}" styleClass="recordsAmount talSubRoleRecordsAmount" onchange="calculatRemainsDivided()"/></td>
+                            </tr>
+                        </tbody>
+                    </table>
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

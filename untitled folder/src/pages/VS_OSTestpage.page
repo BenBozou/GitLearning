@@ -1,0 +1,33 @@
+<apex:page standardStylesheets="false" showHeader="true" sidebar="true" docType="html-5.0">
+    <style>
+        .datepickers-container {
+        position:absolute !important;
+        }
+    </style>
+    <div class="vlocity via-slds" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" ng-app="RfpQa">
+        <vlocity_cmt:BusinessProcessComponent strOmniScriptType="Opportunities"
+            strOmniScriptSubType="NewTask"
+            strOmniScriptLang="Hebrew"
+            previewMode="{!$CurrentPage.parameters.previewEmbedded}"
+            verticalMode="{!$CurrentPage.parameters.verticalMode}"
+            strOmniScriptId="{!$CurrentPage.parameters.designerPreviewId}"
+            scriptLayout="lightning"/>
+        <script type="text/javascript">
+            var modules = ['vlocity-business-process'];
+            var myModule = angular.module('RfpQa', modules);
+        </script>
+        <script> 
+            var a = navigator.userAgent; 
+            if ((a.indexOf('Salesforce') != -1) && (a.indexOf('iPhone') != -1 || a.indexOf('iPad') != -1) && (a.indexOf('Safari') == -1)) { 
+            var s = document.createElement('style'); 
+            s.innerHTML = "html,html body
+            {overflow:scroll;-webkit-overflow-scrolling:touch;zindex:0;}
+            body
+            {position:absolute;left:0;right:0;top:0;bottom:0;}
+            "; 
+            document.getElementsByTagName('head')0.appendChild(s); 
+            } 
+        </script>
+    </div>
+    <vlocity_cmt:VFActionFunction />
+</apex:page>
